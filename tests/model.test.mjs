@@ -7,7 +7,7 @@ test('all twelve commissions have matching supply and demand and complete soluti
  for(const level of levels){assert.ok(validLevel(level));let state=createState(level);const path=solve(state,level);assert.ok(path);for(const a of path){const before=clone(state),next=move(state,level,a.source,a.target);assert.deepEqual(state,before);assert.ok(next);state=next;assert.equal([...state.rails.flat(),...state.orders.flat(),...state.buffer.filter(x=>x!==null)].length,level.orders.flat().length);}assert.ok(won(state,level));assert.equal(actions(state,level).length,0);}
 });
 test('bead palette expands with chapter difficulty',()=>{
- const expected=[3,3,3,4,4,5,5,5,7,8,9,10];
+ const expected=[3,3,3,4,4,5,5,6,7,8,9,10];
  assert.deepEqual(levels.map(level=>new Set(level.orders.flat()).size),expected);
  for(const [index,level] of levels.entries())assert.deepEqual([...new Set(level.orders.flat())].sort((a,b)=>a-b),Array.from({length:expected[index]},(_,color)=>color));
 });
