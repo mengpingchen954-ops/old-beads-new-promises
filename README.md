@@ -59,7 +59,7 @@ node tests/feel.mjs
 - `src/renderer.js`：单一 Three.js canvas，正交 2D 镜头、纹理珠子、工作台与短动作动画。桌面左右布局、手机竖向布局；静止时不持续重绘，像素比上限 2。
 - `src/main.js`：DOM 菜单与无障碍操作层、故事、收藏、保存、合成音效。
 - `src/levels.js` / `src/content.js`：固定关卡与原创角色、订单和完整故事。
-- `public/art/`：十二个原创 SVG 美术资源，包括六种珠子、三位顾客、桌面、封面和标记。不是临时占位图；可直接用于 Three.js 纹理或网页图像。
+- `public/art/`：十二个原创 SVG 美术资源，包括六种圆形水晶珠（半透明渐变、内含物、切面高光与穿孔）、三位顾客、桌面、封面和标记。珠串参考了用户提供的水晶/文玩手串方向，但没有把参考照片直接放入游戏；可直接用于 Three.js 纹理或网页图像。
 - `scripts/create-art.mjs`：可复现的原创矢量绘制源；`scripts/create-levels.mjs`：带解法校验的固定关卡生成源。
 
 最初请求 imagegen，但当前工具不可用；用户随后选择使用统一原创手绘风美术，不调用付费 imagegen CLI。作品没有使用 AI 生成图片，也不声称这些 SVG 来自 imagegen。没有使用外部图片、字体 CDN、角色 IP 或在线游戏服务。
