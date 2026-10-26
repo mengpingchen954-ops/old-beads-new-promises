@@ -12,7 +12,7 @@ export function sourcePos(source,capacity){return source.type==='rail'?railPos(s
 export class Board {
   constructor(host){
     this.host=host;this.scene=new THREE.Scene();this.camera=new THREE.OrthographicCamera(0,W,0,H,.1,100);this.camera.position.z=30;
-    this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});this.renderer.setClearColor('#e8dcc3');this.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});this.renderer.setClearColor('#edf7ff');this.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.domElement.setAttribute('aria-hidden','true');host.prepend(this.renderer.domElement);
     this.group=new THREE.Group();this.fx=new THREE.Group();this.scene.add(this.group,this.fx);this.effects=[];this.beads=new Map();this.rims=new Map();this.textures={};this.geometry=new THREE.PlaneGeometry(1,1);this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);this.resize();

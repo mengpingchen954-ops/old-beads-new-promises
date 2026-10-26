@@ -2,12 +2,12 @@ import {deflateSync} from 'node:zlib';
 
 // Original, deterministic sphere shading. No reference photographs are embedded.
 export const crystalProfiles=[
- {name:'coral',absorb:[.03,.20,.17],cloud:[245,207,207],rough:.32,kind:'rose'},
- {name:'jade',absorb:[.25,.09,.19],cloud:[45,79,63],rough:.24,kind:'moss'},
- {name:'amber',absorb:[.02,.09,.30],cloud:[205,151,53],rough:.08,kind:'rutile'},
- {name:'pearl',absorb:[.025,.025,.025],cloud:[225,226,220],rough:.30,kind:'moon'},
- {name:'blue',absorb:[.25,.09,.025],cloud:[182,215,224],rough:.12,kind:'aqua'},
- {name:'lilac',absorb:[.12,.29,.04],cloud:[151,115,164],rough:.13,kind:'amethyst'}
+ {name:'coral',absorb:[.02,.14,.12],cloud:[255,190,202],rough:.28,kind:'rose'},
+ {name:'jade',absorb:[.12,.045,.10],cloud:[99,176,145],rough:.20,kind:'moss'},
+ {name:'amber',absorb:[.01,.06,.22],cloud:[238,184,72],rough:.08,kind:'rutile'},
+ {name:'pearl',absorb:[.015,.015,.015],cloud:[240,244,248],rough:.28,kind:'moon'},
+ {name:'blue',absorb:[.15,.045,.012],cloud:[111,199,235],rough:.10,kind:'aqua'},
+ {name:'lilac',absorb:[.07,.20,.025],cloud:[183,122,206],rough:.11,kind:'amethyst'}
 ];
 function crc(data){let c=0xffffffff;for(const byte of data){c^=byte;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^0xffffffff)>>>0;}
 function chunk(type,data){const name=Buffer.from(type),out=Buffer.alloc(12+data.length);out.writeUInt32BE(data.length);name.copy(out,4);data.copy(out,8);out.writeUInt32BE(crc(Buffer.concat([name,data])),8+data.length);return out;}
