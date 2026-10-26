@@ -2,12 +2,12 @@ import {deflateSync} from 'node:zlib';
 
 // Original, deterministic sphere shading. No reference photographs are embedded.
 export const crystalProfiles=[
- {name:'coral',absorb:[.02,.14,.12],cloud:[255,190,202],rough:.28,kind:'rose'},
- {name:'jade',absorb:[.12,.045,.10],cloud:[99,176,145],rough:.20,kind:'moss'},
- {name:'amber',absorb:[.01,.06,.22],cloud:[238,184,72],rough:.08,kind:'rutile'},
- {name:'pearl',absorb:[.015,.015,.015],cloud:[240,244,248],rough:.28,kind:'moon'},
- {name:'blue',absorb:[.15,.045,.012],cloud:[111,199,235],rough:.10,kind:'aqua'},
- {name:'lilac',absorb:[.07,.20,.025],cloud:[183,122,206],rough:.11,kind:'amethyst'}
+ {name:'coral',absorb:[.02,.14,.12],tint:[248,135,163],cloud:[255,190,202],rough:.28,kind:'rose'},
+ {name:'jade',absorb:[.12,.045,.10],tint:[93,188,149],cloud:[123,202,173],rough:.20,kind:'moss'},
+ {name:'amber',absorb:[.01,.06,.22],tint:[239,181,55],cloud:[246,203,108],rough:.08,kind:'rutile'},
+ {name:'pearl',absorb:[.015,.015,.015],tint:[205,226,244],cloud:[240,244,248],rough:.28,kind:'moon'},
+ {name:'blue',absorb:[.15,.045,.012],tint:[80,177,227],cloud:[141,214,241],rough:.10,kind:'aqua'},
+ {name:'lilac',absorb:[.07,.20,.025],tint:[173,100,214],cloud:[202,151,226],rough:.11,kind:'amethyst'}
 ];
 function crc(data){let c=0xffffffff;for(const byte of data){c^=byte;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^0xffffffff)>>>0;}
 function chunk(type,data){const name=Buffer.from(type),out=Buffer.alloc(12+data.length);out.writeUInt32BE(data.length);name.copy(out,4);data.copy(out,8);out.writeUInt32BE(crc(Buffer.concat([name,data])),8+data.length);return out;}
@@ -33,11 +33,14 @@ export function crystalData(name){
    const x=(px-125)/radius,y=(py-121)/radius,rr=x*x+y*y,offset=(py*size+px)*4;
    let rgb=[62,49,33],alpha=.22*Math.exp(-(((px-132)/105)**2+((py-136)/101)**2)*3.6);
    if(rr<1){
-     const z=Math.sqrt(1-rr),n=cloudNoise(x,y,z),light=clamp(-.47*x-.57*y+.68*z),fresnel=(1-z)**3;
-     rgb=profile.absorb.map((a,i)=>[242,239,227][i]*Math.exp(-a*(.4+1.7*z))*(.78+.16*light)+12*z);
-     let cloud=clamp((n-.38)*1.7)*profile.rough;
-     if(profile.kind==='moss')cloud=clamp((cloudNoise(x*1.4,y*1.3,z)-.42)*6)*.85;
-     if(profile.kind==='amethyst')cloud=clamp((cloudNoise(x*1.5,y,z)-.35)*1.5)*.4;
+     const z=Math.sqrt(1-rr),n=cloudNoise(x,y,z),light=clamp(-.47*x-.57*y+.68*z),fresnel=(1-z)**2;
+     rgb=profile.absorb.map((a,i)=>[250,248,240][i]*Math.exp(-a*(.28+.82*z))*(.86+.19*light)+10*z);
+     rgb=rgb.map((v,i)=>mix(v,profile.tint[i],.48+.08*(1-z)));
+     const lowerShade=clamp((y+.08)*.34+(1-z)*.16);
+     rgb=rgb.map((v,i)=>mix(v,profile.tint[i]*.62,lowerShade*.22));
+     let cloud=clamp((n-.42)*1.45)*profile.rough;
+     if(profile.kind==='moss')cloud=clamp((cloudNoise(x*1.4,y*1.3,z)-.48)*4.2)*.38;
+     if(profile.kind==='amethyst')cloud=clamp((cloudNoise(x*1.5,y,z)-.38)*1.2)*.22;
      rgb=rgb.map((v,i)=>mix(v,profile.cloud[i],cloud));
      // Internal fractures catch light behind the surface, rather than forming painted outlines.
      let lines=0;
@@ -49,19 +52,23 @@ export function crystalData(name){
      }
      rgb=rgb.map((v,i)=>mix(v,profile.kind==='rutile'?[158,113,41][i]:[252,251,244][i],clamp(lines)*(profile.kind==='moon'?.15:.65)));
      if(profile.kind==='moon'){
-       const blueGlow=Math.exp(-((x-.24)**2/.14+(y+.06)**2/.3))*.26;
+     const blueGlow=Math.exp(-((x-.24)**2/.14+(y+.06)**2/.3))*.32;
        rgb=rgb.map((v,i)=>mix(v,[112,178,245][i],blueGlow));
      }
      const cord=Math.exp(-(((y-.09-.035*Math.sin(x*3))/.009)**2))*clamp((.85-Math.abs(x))*8)*.16;
-     rgb=rgb.map(v=>mix(v,242,cord));
+     rgb=rgb.map(v=>mix(v,255,cord));
+     const innerGlow=Math.exp(-((x+.12)**2/.48+(y+.25)**2/.62))*.08;
+     rgb=rgb.map(v=>mix(v,255,innerGlow));
      const reflection=clamp((-.31*x-.41*y+.857*z));
-     const spec=Math.pow(reflection,180)*.82+Math.pow(reflection,30)*.11;
-     const window=Math.exp(-(((x+.41)/.10)**8+((y+.46)/.045)**8))*.8;
-     const lower=Math.exp(-(((Math.sqrt(rr)-.85)/.028)**2))*clamp(y+.3)*clamp(x+.55)*.42;
-     rgb=rgb.map((v,i)=>mix(mix(v,[75,70,59][i],fresnel*.7),[255,255,252][i],clamp(spec+window+lower)));
+     const spec=Math.pow(reflection,180)*.98+Math.pow(reflection,30)*.2;
+     const window=Math.exp(-(((x+.41)/.12)**8+((y+.46)/.065)**8))*.95;
+     const broadHighlight=Math.exp(-(((x+.30)/.23)**2+((y+.34)/.18)**2))*0.42;
+     const rimGlow=Math.exp(-(((Math.sqrt(rr)-.88)/.045)**2))*.2;
+     const lower=Math.exp(-(((Math.sqrt(rr)-.85)/.028)**2))*clamp(y+.3)*clamp(x+.55)*.55;
+     rgb=rgb.map((v,i)=>mix(mix(mix(v,[220,239,250][i],fresnel*.25),profile.tint[i]*.72,rimGlow),[255,255,252][i],clamp(spec+window+lower+broadHighlight)));
      // Tiny side openings preserve the real through-drilled appearance.
      const hole=Math.exp(-(((Math.abs(x)-.942)/.027)**2+((y-.09)/.024)**2))*.65;
-     rgb=rgb.map(v=>mix(v,64,hole));alpha=clamp((1-Math.sqrt(rr))*radius);
+     rgb=rgb.map(v=>mix(v,104,hole*.28));alpha=clamp((1-rr)*18)*(.9+.08*z);
    }
    for(let c=0;c<3;c++)pixels[offset+c]=clamp(rgb[c]/255)*255;
    pixels[offset+3]=alpha*255;
