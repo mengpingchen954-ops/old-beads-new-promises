@@ -6,4 +6,13 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media(min-width:761px){.board-wrap{width:min(100%,calc((100svh - 245px)*1.42857));margin:0 auto}.work-area{align-self:start}}
 [hidden]{display:none!important}
+.bracelet{width:230px;height:230px;background:radial-gradient(ellipse at 50% 52%,#fcf9ef 0%,#e9e0ce 68%,transparent 70%);border-radius:50%}
+.bracelet-thread{inset:15.5%;border-color:#bba57388}
+.bracelet>img,.gallery-item .bracelet>img{width:15.5%;height:15.5%;filter:drop-shadow(0 2px 1px #59482c18)}
+.bracelet-spacer{position:absolute;width:1.5%;height:5.3%;border-radius:2px;background:linear-gradient(90deg,#917240,#fff0b9 45%,#b18c48 70%,#e8d49c);box-shadow:0 1px 2px #6c542e33}
+.bracelet-knot{top:86%;left:48.5%;width:3%;height:3.8%;font-size:0;border:1px solid #ac8d4e;border-radius:50%;background:linear-gradient(110deg,#fffdf0,#cdbb8d);box-shadow:0 2px 3px #6c542e26}
+.bracelet-knot:before{content:'';position:absolute;width:1px;height:70%;background:#ad8e4a;bottom:100%;left:50%}
+.gallery-item .bracelet{width:148px;height:148px;max-width:100%}
+.reward-bracelets{gap:22px;padding:4px 0 12px}
+@media(max-width:600px){.reward-bracelets{gap:2px}.reward-bracelets .bracelet{width:min(40vw,190px);height:min(40vw,190px)}.gallery-item .bracelet{width:120px;height:120px}}
 .board-hit[data-source]{cursor:grab}.board-hit[data-source]:active{cursor:grabbing}.sound-settings{min-height:32px;margin-left:8px;color:#59735b;letter-spacing:1px}.audio-control{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:16px 0;color:#57674f;font-size:14px}.audio-control small{display:block;margin-top:7px;font-size:11px;color:#8e917c}.audio-control output{font-variant-numeric:tabular-nums;color:#8b7955}#volume-slider{width:100%;accent-color:#466e52;min-height:35px;margin-bottom:14px}#music-toggle{width:22px;height:22px;accent-color:#466e52;flex-shrink:0}#sound-preview{padding:12px 18px;border-radius:4px}.reward-bracelets .bracelet{animation:bracelet-arrive .65s cubic-bezier(.2,.8,.2,1) both}.reward-bracelets .bracelet:nth-child(2){animation-delay:.12s}@keyframes bracelet-arrive{from{opacity:0;transform:translateY(16px) rotate(-8deg) scale(.93)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}

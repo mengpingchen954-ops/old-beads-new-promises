@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import {COLORS} from './model.js';
 import {flightPoint,rebound} from './feedback.js';
+import {accentSlot,braceletLayout,BRACELET_SITES,BRACELET_RADIUS,BRACELET_BEAD_SIZE} from './jewelry.js';
 export let W=1000,H=700;
 let compact=false;
 export const railPos=(i,j=0)=>({x:(compact?140:145)+j*(compact?93:81),y:(compact?150:168)+i*91});
 export const bufferPos=(i,capacity)=>({x:compact?(capacity===3?200+i*100:250+i*110):(capacity===3?143+i*100:170+i*110),y:compact?540:580});
 export const orderPos=i=>({x:compact?180+i*300:741,y:compact?747:212+i*264});
-export function beadPos(i,j,count){const p=orderPos(i),a=-Math.PI/2+j/count*Math.PI*2;return {x:p.x+Math.cos(a)*74,y:p.y+Math.sin(a)*74};}
+export function beadPos(i,j,count){const p=orderPos(i),a=-Math.PI/2+accentSlot(j,count)/BRACELET_SITES*Math.PI*2;return {x:p.x+Math.cos(a)*BRACELET_RADIUS,y:p.y+Math.sin(a)*BRACELET_RADIUS};}
 export function sourcePos(source,capacity){return source.type==='rail'?railPos(source.index):bufferPos(source.index,capacity);}
 export class Board {
   constructor(host){
@@ -51,9 +52,15 @@ export class Board {
     state.buffer.forEach((c,i)=>{const p=bufferPos(i,level.capacity);this.circle(p.x+2,p.y+4,41,'#988465',-1,.13);this.circle(p.x,p.y,41,'#e5dcc8');this.rims.set(`buffer-${i}`,this.ring(p.x,p.y,39,'#b7a482'));this.ring(p.x,p.y,32,'#ccbea3',0,.5);if(c!==null)this.bead(`buffer-${i}`,c,p,83);else this.text('＋',p.x,p.y,24,'#b7a98d');if(selected?.type==='buffer'&&selected.index===i)this.ring(p.x,p.y,43,'#365e4d',3);});
     this.text(`${state.buffer.filter(c=>c!==null).length} / ${level.capacity} 格占用 · 用完即可腾空`,compact?330:240,compact?604:642,14,'#8a7e67');
     state.orders.forEach((done,i)=>{
-      const p=orderPos(i), goal=level.orders[i];this.circle(p.x+2,p.y+4,105,'#988465',-1,.12);this.circle(p.x,p.y,106,'#f1ead9',0);this.ring(p.x,p.y,102,'#c7b692');this.rims.set(`order-${i}`,this.ring(p.x,p.y,74,'#b79657'));
-      goal.forEach((c,j)=>{const q=beadPos(i,j,goal.length);this.bead(`order-${i}-${j}`,c,q,58,j<done.length?1:.29);if(j===done.length){this.ring(q.x,q.y,23,'#48725b',3);this.circle(q.x+17,q.y-17,4,'#48725b',4);}});
-      this.text(`手链 ${i+1}`,p.x,p.y-12,17,'#6a634f');this.text(`${done.length} / ${goal.length}`,p.x,p.y+15,19,'#47634e');
+      const p=orderPos(i), goal=level.orders[i];this.circle(p.x+2,p.y+4,105,'#988465',-1,.12);this.circle(p.x,p.y,106,'#f1ead9',0);this.ring(p.x,p.y,102,'#c7b692');this.rims.set(`order-${i}`,this.ring(p.x,p.y,BRACELET_RADIUS,'#b79657'));
+      braceletLayout(goal).forEach(({slot,goalIndex:j,color,x,y,angle})=>{
+        const q={x:p.x+x*BRACELET_RADIUS,y:p.y+y*BRACELET_RADIUS},base=j<0;
+        const mesh=this.bead(base?`base-${i}-${slot}`:`order-${i}-${j}`,color,q,BRACELET_BEAD_SIZE,base||j<done.length?1:.24);mesh.userData.order=i;mesh.userData.slot=slot;
+        if(!base){const a=angle+Math.PI/BRACELET_SITES,s=this.rect(p.x+Math.cos(a)*BRACELET_RADIUS,p.y+Math.sin(a)*BRACELET_RADIUS,3.5,12,'#baa06a',3);s.rotation.z=a;this.circle(s.position.x-1,s.position.y-2,1.2,'#fff3ca',4,.7);}
+        if(j===done.length){this.ring(q.x,q.y,18,'#48725b',3);this.circle(q.x+13,q.y-13,3,'#48725b',4);}
+      });
+      this.circle(p.x,p.y+BRACELET_RADIUS+18,4,'#c2a76d',3);this.circle(p.x,p.y+BRACELET_RADIUS+25,5,'#e5d8b4',3);this.ring(p.x,p.y+BRACELET_RADIUS+25,5,'#b69b60',4);
+      this.text(`配珠 ${i+1}`,p.x,p.y-12,17,'#6a634f');this.text(`${done.length} / ${goal.length}`,p.x,p.y+15,19,'#47634e');
       const next=goal[done.length];this.text(next===undefined?'已完成 ✓':`下一颗 · ${COLORS[next].name}${COLORS[next].symbol}`,p.x,p.y+136,16,next===undefined?'#3c7255':'#6d735d');
     });
     if(hint){const p=sourcePos(hint.source,level.capacity),q=hint.target.type==='order'?orderPos(hint.target.index):bufferPos(hint.target.index,level.capacity);this.ring(p.x,p.y,45,'#ba9146',4);this.ring(q.x,q.y,hint.target.type==='order'?112:45,'#ba9146',4);}
@@ -119,7 +126,7 @@ export class Board {
       if(e.type==='flight'){
         const dest=this.beads.get(e.key);
         if(age<e.duration){
-          if(dest)dest.visible=false;const p=flightPoint(t,e.from,e.to,e.returning?12:35),size=83+(e.target?.type==='order'?58-83:0)*t;
+          if(dest)dest.visible=false;const p=flightPoint(t,e.from,e.to,e.returning?12:35),size=83+(e.target?.type==='order'?BRACELET_BEAD_SIZE-83:0)*t;
           e.mesh.position.set(p.x,p.y,12);e.mesh.scale.set(size,-size,1);e.mesh.rotation.z=Math.sin(t*Math.PI)*.19;
           e.shadow.position.set(p.x+3,p.y+14+Math.sin(t*Math.PI)*16,8);e.shadow.scale.set(.8,.25,1);e.shadow.material.opacity=.12*(1-.5*Math.sin(t*Math.PI));
           if(e.source?.type==='rail')for(let j=0;j<5;j++){const m=this.beads.get(`rail-${e.source.index}-${j}`);if(m){m.position.x+=(compact?93:81)*(1-t)**3;m.rotation.z=rebound(age/1000, .12);}}
@@ -127,13 +134,13 @@ export class Board {
       }else if(e.type==='impact'){
         const spring=rebound(age/1000),m=this.beads.get(e.key);if(m){m.position.y+=spring*7;m.scale.x*=1+spring*.09;m.scale.y*=1-spring*.07;m.rotation.z=spring*.12;}
         const rim=this.rims.get(`${e.target?.type}-${e.target?.index}`);if(rim)rim.scale.setScalar(1+spring*.018);
-        if(e.target?.type==='order')for(const step of [-1,1]){const neighbor=this.beads.get(`order-${e.target.index}-${Number(e.key.split('-')[2])+step}`);if(neighbor&&neighbor.userData.opacity===1){const wave=rebound(age/1000-.035,.65);neighbor.rotation.z=wave*.16;neighbor.position.y+=wave*4;}}
+        if(e.target?.type==='order'&&m)for(const neighbor of this.beads.values()){const d=neighbor.userData,delta=(d.slot-m.userData.slot+BRACELET_SITES)%BRACELET_SITES;if(d.order===e.target.index&&(delta===1||delta===BRACELET_SITES-1)&&d.opacity===1){const wave=rebound(age/1000-.035,.65);neighbor.rotation.z=wave*.16;neighbor.position.y+=wave*4;}}
         e.mesh.scale.setScalar(1+t*1.8);e.mesh.material.opacity=.6*(1-t)**2;
       }else if(e.type==='contact'){
         const m=this.beads.get(e.key),s=rebound(age/1000+.02);if(m){m.position.x+=s*e.dx;m.position.y+=s*e.dy;m.rotation.z+=s*.14;}
       }else if(e.type==='thread'){
         e.mesh.scale.setScalar(1+t*.11);e.mesh.material.opacity=.75*(1-t);
-        for(const [key,m] of this.beads)if(key.startsWith(`order-${e.index}-`)){const wave=rebound(age/1000);m.scale.multiplyScalar(1+wave*.055);m.rotation.z+=wave*.06;}
+        for(const m of this.beads.values())if(m.userData.order===e.index){const wave=rebound(age/1000);m.scale.multiplyScalar(1+wave*.055);m.rotation.z+=wave*.06;}
       }else if(e.type==='spark'){e.mesh.position.x=e.origin.x+e.dx*t;e.mesh.position.y=e.origin.y+e.dy*t;e.mesh.material.opacity=.75*(1-t)**2;
       }else if(e.type==='reject'){e.mesh.material.opacity=.8*(1-t);e.mesh.position.x+=Math.sin(age*.07)*(1-t)*.8;}
       if(age>=e.duration){this.removeFx(e.mesh);this.removeFx(e.shadow);this.effects.splice(this.effects.indexOf(e),1);}

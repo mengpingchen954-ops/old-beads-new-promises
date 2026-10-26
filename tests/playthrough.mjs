@@ -37,6 +37,7 @@ for(let i=0;i<12;i++){
  info=await read();const path=solve(info.state,levels[i]);assert.ok(path);
  for(const a of path)await perform(a);
  assert.equal((await read()).mode,'complete');assert.ok((await read()).completed.includes(i));
+ await page.locator('#next-order').waitFor();
  if(i===3||i===11)await page.screenshot({path:`artifacts/reward-${i+1}.png`,fullPage:true});
  if(i<11){await page.locator('#next-order').click();await page.locator('#accept-order').click();}
 }

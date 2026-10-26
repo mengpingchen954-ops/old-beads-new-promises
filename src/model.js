@@ -1,10 +1,10 @@
 export const COLORS = [
-  {name:'朱砂',symbol:'花',hex:'#c5715c',file:'coral'},
-  {name:'青玉',symbol:'叶',hex:'#6a988a',file:'jade'},
-  {name:'蜜蜡',symbol:'星',hex:'#c6a257',file:'amber'},
-  {name:'月白',symbol:'月',hex:'#d6d6c5',file:'pearl'},
-  {name:'黛蓝',symbol:'菱',hex:'#628b9a',file:'blue'},
-  {name:'藕紫',symbol:'瓣',hex:'#ab889c',file:'lilac'}
+  {name:'粉晶',symbol:'',hex:'#c5715c',file:'coral'},
+  {name:'绿幽灵',symbol:'',hex:'#6a988a',file:'jade'},
+  {name:'金发晶',symbol:'',hex:'#c6a257',file:'amber'},
+  {name:'月光石',symbol:'',hex:'#d6d6c5',file:'pearl'},
+  {name:'海蓝宝',symbol:'',hex:'#628b9a',file:'blue'},
+  {name:'紫水晶',symbol:'',hex:'#ab889c',file:'lilac'}
 ];
 export function createState(level) {
   return {rails:level.rails.map(a=>[...a]),orders:level.orders.map(()=>[]),buffer:Array(level.capacity).fill(null),moves:0};
