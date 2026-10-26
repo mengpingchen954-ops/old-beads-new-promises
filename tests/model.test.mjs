@@ -6,6 +6,11 @@ test('all twelve commissions have matching supply and demand and complete soluti
  assert.equal(levels.length,12);
  for(const level of levels){assert.ok(validLevel(level));let state=createState(level);const path=solve(state,level);assert.ok(path);for(const a of path){const before=clone(state),next=move(state,level,a.source,a.target);assert.deepEqual(state,before);assert.ok(next);state=next;assert.equal([...state.rails.flat(),...state.orders.flat(),...state.buffer.filter(x=>x!==null)].length,level.orders.flat().length);}assert.ok(won(state,level));assert.equal(actions(state,level).length,0);}
 });
+test('bead palette expands with chapter difficulty',()=>{
+ const expected=[3,3,3,4,4,5,5,5,7,8,9,10];
+ assert.deepEqual(levels.map(level=>new Set(level.orders.flat()).size),expected);
+ for(const [index,level] of levels.entries())assert.deepEqual([...new Set(level.orders.flat())].sort((a,b)=>a-b),Array.from({length:expected[index]},(_,color)=>color));
+});
 test('wrong colors and illegal storage moves preserve state; undo snapshot restores bead counts',()=>{
  const l=levels[0],s=createState(l),before=clone(s);assert.equal(move(s,l,{type:'rail',index:0},{type:'order',index:1}),null);assert.deepEqual(s,before);
  const buffered=move(s,l,{type:'rail',index:0},{type:'buffer',index:0});assert.equal(buffered.buffer[0],0);assert.equal(move(buffered,l,{type:'buffer',index:0},{type:'buffer',index:1}),null);assert.equal(move(buffered,l,{type:'rail',index:1},{type:'buffer',index:0}),null);

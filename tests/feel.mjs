@@ -38,18 +38,18 @@ const sourceAudio=fs.readFileSync('src/audio.js','utf8');
 const rendered=await page.evaluate(async code=>{
   const url=URL.createObjectURL(new Blob([code],{type:'text/javascript'})),{synthesize}=await import(url);URL.revokeObjectURL(url);
   const profiles=[];
-  for(let color=0;color<6;color++){
+  for(let color=0;color<10;color++){
     const ctx=new OfflineAudioContext(2,44100,44100);synthesize(ctx,ctx.destination,'land',{color},.02);const b=await ctx.startRendering(),data=b.getChannelData(0);
     let peak=0,energy=0,tail=0,signature=0;for(let i=0;i<data.length;i++){peak=Math.max(peak,Math.abs(data[i]));energy+=data[i]**2;if(i>22050)tail+=data[i]**2;signature+=data[i]*Math.cos(i*.13);}
     profiles.push({peak,rms:Math.sqrt(energy/data.length),tail,signature});
   }
   const ctx=new OfflineAudioContext(2,44100*8,44100);
-  for(let color=0;color<6;color++)synthesize(ctx,ctx.destination,'land',{color,pan:(color-2.5)*.15},.15+color*.8);
+  for(let color=0;color<10;color++)synthesize(ctx,ctx.destination,'land',{color,pan:(color-4.5)*.11},.15+color*.55);
   synthesize(ctx,ctx.destination,'land',{color:2,target:'buffer'},5.1);synthesize(ctx,ctx.destination,'thread',{},6.1);
   const b=await ctx.startRendering();return {profiles,channels:[Array.from(b.getChannelData(0)),Array.from(b.getChannelData(1))]};
 },sourceAudio);
 for(const p of rendered.profiles){assert.ok(p.peak>.02&&p.peak<.8);assert.ok(p.rms>.001);assert.ok(p.tail<.00001);}
-assert.equal(new Set(rendered.profiles.map(p=>p.signature.toFixed(4))).size,6);
+assert.equal(new Set(rendered.profiles.map(p=>p.signature.toFixed(4))).size,10);
 const length=rendered.channels[0].length,wav=Buffer.alloc(44+length*4);
 wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(2,22);wav.writeUInt32LE(44100,24);wav.writeUInt32LE(176400,28);wav.writeUInt16LE(4,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(length*4,40);
 for(let i=0;i<length;i++)for(let c=0;c<2;c++)wav.writeInt16LE(Math.round(Math.max(-1,Math.min(1,rendered.channels[c][i]))*32767),44+i*4+c*2);
@@ -68,4 +68,4 @@ assert.equal(await mp.evaluate(()=>JSON.parse(window.render_game_to_text()).stat
 await mp.locator('[data-source="rail-0"]').tap();await mp.locator('[data-target="order-0"]').tap();assert.equal(await mp.evaluate(()=>JSON.parse(window.render_game_to_text()).state.moves),1);
 const reduced=await browser.newContext({reducedMotion:'reduce'}),rp=await reduced.newPage();rp.on('pageerror',e=>errors.push(String(e)));
 await rp.goto(base);await rp.locator('#start-btn').click();await rp.locator('#accept-order').click();await rp.locator('[data-source="rail-0"]').click();await rp.locator('[data-target="order-0"]').click();assert.equal(await rp.evaluate(()=>JSON.parse(window.render_game_to_text()).feedback.flights),0);
-await browser.close();assert.deepEqual(errors,[]);console.log('PASS: live bead contact, drag rejection, timed landing, cancellation, rapid input, mute and volume persistence, touch cancel, reduced motion; six audible distinct unclipped material profiles.');
+await browser.close();assert.deepEqual(errors,[]);console.log('PASS: live bead contact, drag rejection, timed landing, cancellation, rapid input, mute and volume persistence, touch cancel, reduced motion; ten audible distinct unclipped material profiles.');

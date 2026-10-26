@@ -9,8 +9,8 @@ export const commissions=[
  {title:'另一半蓝色',client:2,note:'先串哪一条，会决定你接下来需要什么。',before:'阿婆从手帕里展开另一半项链。“这颗海蓝宝，你能把它配进去吗？旧线断了，珠子还好。”',after:'你把两半项链的照片放在一起。断口严丝合缝，像隔了很多年才接上的一句话。',keepsake:'另一半的来处',lengths:[5,6],colors:5,railCount:4,capacity:2,seed:49},
  {title:'没有寄出的礼物',client:0,note:'暂存格不是废料盒，每一颗都还有它的位置。',before:'林晚说，那条项链是母亲年轻时做的。搬家那天，一份礼物没来得及交到约好的人手里。',after:'“原来不是谁忘了。”她看着重新串起的珠子，轻轻笑了。“只是一直没找到合适的时机。”',keepsake:'迟到的解释',lengths:[6,6],colors:5,railCount:4,capacity:2,seed:123},
  {title:'两份相同的心意',client:1,note:'先打开需要的那一层，不必把眼前的每颗都拿走。',before:'周予想把旧照片重新洗出来，一张送给奶奶，一张放进林晚母亲留下的相册。',after:'镜头前，两条手链放在照片两侧。这一次，他不急着按快门，先等光落在珠子上。',keepsake:'一式两份',lengths:[6,6],colors:5,railCount:4,capacity:2,seed:77},
- {title:'桂花树下的约定',client:2,note:'还有两格空间，也还有转圜的余地。',before:'阿婆说起那年桂花树下的约定：“等老了，还要一起去看海。”她想请林晚替母亲留下一份纪念。',after:'手链绕过她的手腕，刚好一圈。“人不一定都能回来。可她留下的心意，我收到了。”',keepsake:'看海的约定',lengths:[6,7],colors:6,railCount:4,capacity:2,seed:209},
- {title:'给未来的位置',client:0,note:'这次的珠子更多，慢慢把每一步看清。',before:'林晚要去海边。她打算带着母亲的相册，也替阿婆拍一张桂花树以外的风景。',after:'“不用把所有旧物都留在原样。”她扣好手链，“能带着它们向前走，也很好。”',keepsake:'去海边的车票',lengths:[7,7],colors:6,railCount:4,capacity:2,seed:178},
- {title:'让故事继续',client:1,note:'最后露出的颜色，往往从第一步就已经决定。',before:'周予在照相馆橱窗挂出工坊的照片。有人看见自己的旧珠子，想起了很久没联系的人。',after:'新委托开始多起来。他把最后一张照片递给你：“这张留给你。店里总要有一张自己的故事。”',keepsake:'橱窗里的小店',lengths:[7,8],colors:6,railCount:4,capacity:2,seed:301},
- {title:'旧珠，新约',client:2,note:'把最后两条手链完成，送给这段故事，也送给新的开始。',before:'傍晚，三位熟悉的客人一起推开门。阿婆带桂花糕，周予带照片，林晚带回了一小瓶海边的沙。',after:'门铃还会再响，珠子还会重新串起。有些东西旧了，却从没有失去光。谢谢你，让这间小店的故事，有了新的开始。',keepsake:'一小瓶海沙',lengths:[8,8],colors:6,railCount:4,capacity:2,seed:402}
+ {title:'桂花树下的约定',client:2,note:'红玛瑙先露出来时，别急着把它送错地方。',before:'阿婆说起那年桂花树下的约定：“等老了，还要一起去看海。”这次她带来一颗旧木盒里的红玛瑙。',after:'红色落在月光石之间，像桂花树下亮起的一盏小灯。“人不一定都能回来，可心意会找到位置。”',keepsake:'木盒里的红光',lengths:[6,7],colors:7,railCount:4,capacity:2,seed:511},
+ {title:'给未来的位置',client:0,note:'颜色多起来以后，每一次暂存都要为下一步留位置。',before:'林晚要去海边。她打算带着母亲的相册，也替阿婆拍一张桂花树以外的风景，并把绿松石留在手腕上。',after:'绿松石和海蓝宝挨在一起，像把一小段海岸线重新串好。',keepsake:'潮汐的颜色',lengths:[7,7],colors:8,railCount:4,capacity:2,seed:623},
+ {title:'让故事继续',client:1,note:'烟晶会藏住下一颗，先观察料杆的顺序再动手。',before:'周予在照相馆橱窗挂出工坊的照片。有人看见自己的旧珠子，也看见几颗烟晶里没有洗出的影子。',after:'灰蓝的光没有遮住故事，反而让每颗亮色更清楚。他把最后一张照片递给你：“店里总要有一张自己的故事。”',keepsake:'未洗出的影子',lengths:[7,8],colors:9,railCount:4,capacity:2,seed:734},
+ {title:'旧珠，新约',client:2,note:'十种颜色，最后一份委托要把每个选择都看清。',before:'傍晚，三位熟悉的客人一起推开门。阿婆带桂花糕，周予带照片，林晚带回了一小瓶海边的沙。',after:'门铃还会再响，珠子还会重新串起。有些东西旧了，却从没有失去光。谢谢你，让这间小店的故事，有了新的开始。',keepsake:'一小瓶海沙',lengths:[8,8],colors:10,railCount:4,capacity:2,seed:845}
 ];

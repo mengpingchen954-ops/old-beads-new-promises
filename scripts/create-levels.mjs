@@ -9,7 +9,7 @@ const levels=commissions.map((c,index)=>{
   const r=rng(c.seed+attempt*37), orders=c.lengths.map(n=>Array.from({length:n},()=>Math.floor(r()*c.colors)));
   const bag=orders.flat();for(let j=bag.length-1;j>0;j--){const k=Math.floor(r()*(j+1));[bag[j],bag[k]]=[bag[k],bag[j]];}
   const rails=Array.from({length:c.railCount},()=>[]);bag.forEach((x,i)=>rails[i%c.railCount].push(x));
-  const level={rails,orders,capacity:c.capacity};const path=solve(createState(level),level,35000);
+  const level={rails,orders,capacity:c.capacity};if(new Set(bag).size<c.colors)continue;const path=solve(createState(level),level,35000);
   if(!path||path.filter(a=>a.target.type==='buffer').length<Math.min(2,index))continue;
   candidate=level;break;
  }

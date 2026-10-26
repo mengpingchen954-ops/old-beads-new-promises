@@ -7,7 +7,11 @@ export const crystalProfiles=[
  {name:'amber',absorb:[.01,.06,.22],tint:[239,181,55],cloud:[246,203,108],rough:.08,kind:'rutile'},
  {name:'pearl',absorb:[.015,.015,.015],tint:[205,226,244],cloud:[240,244,248],rough:.28,kind:'moon'},
  {name:'blue',absorb:[.15,.045,.012],tint:[80,177,227],cloud:[141,214,241],rough:.10,kind:'aqua'},
- {name:'lilac',absorb:[.07,.20,.025],tint:[173,100,214],cloud:[202,151,226],rough:.11,kind:'amethyst'}
+ {name:'lilac',absorb:[.07,.20,.025],tint:[173,100,214],cloud:[202,151,226],rough:.11,kind:'amethyst'},
+ {name:'garnet',absorb:[.22,.035,.06],tint:[217,70,92],cloud:[246,133,145],rough:.16,kind:'garnet'},
+ {name:'turquoise',absorb:[.015,.10,.085],tint:[39,188,177],cloud:[114,224,204],rough:.13,kind:'turquoise'},
+ {name:'smoky',absorb:[.08,.07,.02],tint:[112,128,176],cloud:[177,190,221],rough:.24,kind:'smoky'},
+ {name:'citrine',absorb:[.01,.08,.18],tint:[242,137,46],cloud:[255,197,103],rough:.09,kind:'citrine'}
 ];
 function crc(data){let c=0xffffffff;for(const byte of data){c^=byte;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^0xffffffff)>>>0;}
 function chunk(type,data){const name=Buffer.from(type),out=Buffer.alloc(12+data.length);out.writeUInt32BE(data.length);name.copy(out,4);data.copy(out,8);out.writeUInt32BE(crc(Buffer.concat([name,data])),8+data.length);return out;}

@@ -5,7 +5,11 @@ export const MATERIALS = [
   {hz:830,decay:.075,partials:[1,2.07,3.12],noise:.32},
   {hz:2670,decay:.12,partials:[1,1.91,2.73],noise:.06},
   {hz:1860,decay:.19,partials:[1,1.42,2.57],noise:.09},
-  {hz:1250,decay:.11,partials:[1,1.78,2.93],noise:.17}
+  {hz:1250,decay:.11,partials:[1,1.78,2.93],noise:.17},
+  {hz:980,decay:.095,partials:[1,1.31,2.43],noise:.2},
+  {hz:1540,decay:.14,partials:[1,1.67,2.84],noise:.12},
+  {hz:1120,decay:.22,partials:[1,1.38,2.18],noise:.06},
+  {hz:2010,decay:.08,partials:[1,1.57,2.76],noise:.18}
 ];
 function partial(ctx,out,hz,time,duration,gain,type='sine'){
   const osc=ctx.createOscillator(),env=ctx.createGain();osc.type=type;

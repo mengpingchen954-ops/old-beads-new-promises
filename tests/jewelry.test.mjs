@@ -17,8 +17,8 @@ test('every commission has a closed strand and exactly one visible site per play
  }
 });
 
-test('six original crystal textures decode as complete transparent PNG sprites',()=>{
- const images=crystalProfiles.map(p=>crystalData(p.name));assert.equal(new Set(images).size,6);
+test('ten original crystal textures decode as complete transparent PNG sprites',()=>{
+ const images=crystalProfiles.map(p=>crystalData(p.name));assert.equal(new Set(images).size,10);
  for(const data of images){
   const png=Buffer.from(data.split(',')[1],'base64');assert.equal(png.subarray(1,4).toString(),'PNG');
   assert.equal(png.readUInt32BE(16),256);assert.equal(png.readUInt32BE(20),256);
