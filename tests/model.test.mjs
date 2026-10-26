@@ -17,5 +17,11 @@ test('blocked states can be recognized, and a saved snapshot remains solvable',(
  assert.ok(found,'at least one real blocking situation should exist');
 });
 test('corrupt progress is ignored; completed indices are bounded and deduplicated',()=>{
- const storage=value=>({getItem:()=>value});assert.deepEqual(loadProgress(storage('broken')).completed,[]);assert.deepEqual(loadProgress(storage(JSON.stringify({version:1,completed:[0,0,-1,99,1],sound:false}))),{completed:[0,1],sound:false,session:null});assert.equal(loadProgress({getItem:()=>{throw Error();}}).session,null);
+ const storage=value=>({getItem:()=>value});assert.deepEqual(loadProgress(storage('broken')).completed,[]);assert.deepEqual(loadProgress(storage(JSON.stringify({version:1,completed:[0,0,-1,99,1],sound:false}))),{completed:[0,1],coins:0,sound:false,session:null});assert.equal(loadProgress({getItem:()=>{throw Error();}}).session,null);
+});
+test('coin balance is backward compatible and only accepts non-negative integers',()=>{
+ const storage=value=>({getItem:()=>value});
+ assert.equal(loadProgress(storage(JSON.stringify({version:1,completed:[],coins:275}))).coins,275);
+ for(const coins of [-1,1.5,'275',null])assert.equal(loadProgress(storage(JSON.stringify({version:1,completed:[],coins}))).coins,0);
+ assert.equal(loadProgress(storage(JSON.stringify({version:1,completed:[]}))).coins,0);
 });

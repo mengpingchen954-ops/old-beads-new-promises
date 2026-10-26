@@ -51,8 +51,8 @@ export function validLevel(level) {
   return supply===demand && level.rails.every(a=>a.length>0) && level.capacity>0 && level.orders.every(a=>a.length>0);
 }
 export function loadProgress(storage) {
-  try {const p=JSON.parse(storage.getItem('old-beads-v1'));if(p?.version===1&&Array.isArray(p.completed))return {completed:[...new Set(p.completed.filter(x=>Number.isInteger(x)&&x>=0&&x<12))],sound:p.sound!==false,...(typeof p.volume==='number'&&Number.isFinite(p.volume)?{volume:Math.max(0,Math.min(1,p.volume))}:{}),...(typeof p.music==='boolean'?{music:p.music}:{}),session:validSession(p.session)?p.session:null};}catch{}
-  return {completed:[],sound:true,session:null};
+  try {const p=JSON.parse(storage.getItem('old-beads-v1'));if(p?.version===1&&Array.isArray(p.completed))return {completed:[...new Set(p.completed.filter(x=>Number.isInteger(x)&&x>=0&&x<12))],coins:Number.isInteger(p.coins)&&p.coins>=0?p.coins:0,sound:p.sound!==false,...(typeof p.volume==='number'&&Number.isFinite(p.volume)?{volume:Math.max(0,Math.min(1,p.volume))}:{}),...(typeof p.music==='boolean'?{music:p.music}:{}),session:validSession(p.session)?p.session:null};}catch{}
+  return {completed:[],coins:0,sound:true,session:null};
 }
 export function validSession(s) {
   return s && Number.isInteger(s.level)&&s.level>=0&&s.level<12 && s.state && Array.isArray(s.state.rails) && s.state.rails.every(Array.isArray) && Array.isArray(s.state.orders) && s.state.orders.every(Array.isArray) && Array.isArray(s.state.buffer) && [...s.state.rails.flat(),...s.state.orders.flat(),...s.state.buffer.filter(x=>x!==null)].every(c=>Number.isInteger(c)&&c>=0&&c<COLORS.length) && Number.isInteger(s.state.moves)&&s.state.moves>=0;

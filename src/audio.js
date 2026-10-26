@@ -43,6 +43,10 @@ export function synthesize(ctx,out,event,{color=0,target='order',pan=0,strength=
     notes.forEach((hz,i)=>{partial(ctx,bus,hz,time+i*.105,.8,.052);partial(ctx,bus,hz*2.002,time+i*.105,.35,.012);});
     brush(ctx,bus,time,.035,.15);
   }
+  if(event==='coin'){
+    [783.99,1046.5,1318.51].forEach((hz,i)=>{partial(ctx,bus,hz,time+i*.075,.38,.07,'triangle');partial(ctx,bus,hz*2,time+i*.075,.18,.018);});
+    brush(ctx,bus,time+.16,.045,.09);
+  }
   // Disconnect the event bus after all tails; no wall timers are needed for offline rendering.
   const end=ctx.createOscillator(),silent=ctx.createGain();silent.gain.value=0;end.connect(silent);silent.connect(out);end.start(time);end.stop(time+1.6);
   end.onended=()=>{end.disconnect();silent.disconnect();bus.disconnect();panner?.disconnect();};

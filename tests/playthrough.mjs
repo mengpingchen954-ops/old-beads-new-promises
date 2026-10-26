@@ -35,8 +35,9 @@ for(let i=0;i<12;i++){
   await page.locator('#hint-btn').click();assert.ok((await read()).hint);await page.locator('#undo-btn').isDisabled();
  }
  info=await read();const path=solve(info.state,levels[i]);assert.ok(path);
+ const coinsBefore=info.coins;
  for(const a of path)await perform(a);
- assert.equal((await read()).mode,'complete');assert.ok((await read()).completed.includes(i));
+ const cleared=await read();assert.equal(cleared.mode,'complete');assert.ok(cleared.completed.includes(i));assert.ok(cleared.coins>coinsBefore);assert.match(await page.locator('.coin-settlement').innerText(),/\+\d+/);assert.match(await page.locator('.coin-total').innerText(),/累计金币\s+\d+/);
  await page.locator('#next-order').waitFor();
  if(i===3||i===11)await page.screenshot({path:`artifacts/reward-${i+1}.png`,fullPage:true});
  if(i<11){await page.locator('#next-order').click();await page.locator('#accept-order').click();}

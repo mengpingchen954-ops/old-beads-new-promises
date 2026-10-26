@@ -6,6 +6,24 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media(min-width:761px){.board-wrap{width:min(100%,calc((100svh - 245px)*1.42857));margin:0 auto}.work-area{align-self:start}}
 [hidden]{display:none!important}
+
+/* Royal Kingdom style coin settlement */
+.coin-balance{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:2px solid #e4b63d;border-radius:999px;background:linear-gradient(180deg,#fff9d6,#ffe7a0);color:#9b681d;font-weight:800;box-shadow:0 3px 0 #c7922d55;font-variant-numeric:tabular-nums}
+.kingdom-coins{grid-column:2;display:inline-flex;align-items:center;gap:5px;color:#ffe8a1;font-size:11px;font-variant-numeric:tabular-nums}
+.coin-settlement{position:relative;display:grid;justify-items:center;gap:4px;margin:4px auto 17px;padding:15px 20px 13px;max-width:300px;border:2px solid #e5b840;border-radius:22px;background:radial-gradient(circle at 50% 0,#fffdf1 0 22%,transparent 55%),linear-gradient(180deg,#fff6c8,#ffe9a4);box-shadow:0 6px 0 #c8902d55,0 12px 28px #b27a2430;overflow:hidden;isolation:isolate;animation:settlement-pop .65s cubic-bezier(.2,.9,.2,1) both}
+.coin-settlement:before{content:'';position:absolute;inset:6px;border:1px solid #d9a52e80;border-radius:17px;pointer-events:none}
+.coin-medallion{display:grid;place-items:center;width:49px;height:49px;border-radius:50%;border:3px solid #fff2a8;background:linear-gradient(145deg,#ffe477,#d89820);color:#fff8d0;font-size:25px;text-shadow:0 2px 0 #ae711d;box-shadow:0 4px 0 #b8791d,0 0 0 4px #edc35455;animation:coin-bounce 1.15s .15s ease-out both}
+.coin-settlement strong{position:relative;color:#a56716;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 2px 0 #fff4b5;animation:coin-number .75s .2s cubic-bezier(.2,.9,.2,1) both}
+.coin-settlement small{color:#9a762e;font-size:11px;font-weight:700;letter-spacing:1px}
+.coin-total{position:relative;margin-top:4px;padding-top:7px;width:100%;border-top:1px solid #d6a43d80;color:#8c6a2a;font-size:12px}.coin-total b{color:#9e6415;font-size:16px;font-variant-numeric:tabular-nums}
+.coin-settlement em{color:#b27b24;font-size:10px;font-style:normal;font-weight:700}
+.coin-orbit{position:absolute;inset:0;pointer-events:none}.coin-orbit i{position:absolute;color:#edbd37;font-size:13px;font-style:normal;opacity:0;animation:coin-spark 1.15s ease-out both}.coin-orbit i:nth-child(1){left:18%;top:30%;animation-delay:.15s}.coin-orbit i:nth-child(2){right:17%;top:24%;animation-delay:.3s}.coin-orbit i:nth-child(3){left:24%;bottom:22%;animation-delay:.42s}.coin-orbit i:nth-child(4){right:23%;bottom:25%;animation-delay:.52s}
+@keyframes settlement-pop{from{opacity:0;transform:translateY(16px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes coin-bounce{0%{transform:translateY(-12px) rotate(-10deg) scale(.7)}60%{transform:translateY(3px) rotate(5deg) scale(1.08)}100%{transform:none}}
+@keyframes coin-number{from{opacity:0;transform:translateY(8px) scale(.65)}to{opacity:1;transform:none}}
+@keyframes coin-spark{0%{opacity:0;transform:scale(.4) translateY(8px)}35%{opacity:1}100%{opacity:0;transform:scale(1.25) translateY(-13px)}}
+@media(max-width:600px){.coin-balance{padding:4px 7px;font-size:10px}.coin-settlement{margin-bottom:12px;padding:13px 16px 11px}.coin-medallion{width:44px;height:44px;font-size:22px}.coin-settlement strong{font-size:27px}.kingdom-coins{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.coin-settlement,.coin-medallion,.coin-settlement strong,.coin-orbit i{animation:none!important}}
 .bracelet{width:230px;height:230px;background:radial-gradient(ellipse at 50% 52%,#fcf9ef 0%,#e9e0ce 68%,transparent 70%);border-radius:50%}
 .bracelet-thread{inset:15.5%;border-color:#bba57388}
 .bracelet>img,.gallery-item .bracelet>img{width:15.5%;height:15.5%;filter:drop-shadow(0 2px 1px #59482c18)}
