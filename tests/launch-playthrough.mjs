@@ -15,6 +15,9 @@ try{for(const mobile of [false,true]){
  await page.goto(base);await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);
  assert.equal((await read()).design.materials.length,24);assert.equal(await page.locator('.design-materials img').count(),24);
  await page.locator('.design-materials img').evaluateAll(images=>Promise.all(images.map(img=>img.decode())));
+ assert.deepEqual((await read()).design.slots,Array(12).fill(null));
+ await page.screenshot({path:`artifacts/empty-start-${mobile?'mobile':'desktop'}.png`,fullPage:true});
+ await material(3);for(const i of [0,1,11])await click(`[data-slot="${i}"]`);
  await material(4);assert.equal((await read()).design.slots[2],null);await click('#design-launch');
  assert.equal((await read()).design.slots[2],4);assert.ok((await read()).feedback.flights>0);
  await page.waitForTimeout(100);await page.screenshot({path:`artifacts/launch-flight-${mobile?'mobile':'desktop'}.png`,fullPage:true});
@@ -40,7 +43,7 @@ try{for(const mobile of [false,true]){
  await drag(2,5);let s=(await read()).design.slots;assert.equal(s[2],null);assert.equal(s[5],4);
  await drag(3,5);s=(await read()).design.slots;assert.equal(s[3],4);assert.equal(s[5],7);
  assert.deepEqual(s.filter(c=>c!==null).sort(),before.filter(c=>c!==null).sort());
- before=[...s];await drag(3,0);assert.deepEqual((await read()).design.slots,before);
+ before=[...s];await drag(3,0);assert.equal((await read()).design.slots[0],4);assert.equal((await read()).design.slots[3],3);await click('#design-undo');assert.deepEqual((await read()).design.slots,before);
  await drag(3,8,{outside:true});assert.deepEqual((await read()).design.slots,before);
  await drag(3,8,{cancel:true});assert.deepEqual((await read()).design.slots,before);assert.equal((await read()).feedback.dragging,false);
  await drag(3,8,{escape:true});assert.deepEqual((await read()).design.slots,before);assert.equal((await read()).feedback.dragging,false);
@@ -55,7 +58,8 @@ try{for(const mobile of [false,true]){
  await page.waitForTimeout(1250);await page.screenshot({path:`artifacts/launch-library-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  await click('#design-reset');await click('#design-confirm-reset');
  const solution=[3,3,10,19,23,22,0,22,23,19,10,3];
- for(let i=2;i<11;i++){await material(solution[i]);await click('#design-launch');}
+ assert.deepEqual((await read()).design.slots,Array(12).fill(null));
+ for(let i=0;i<12;i++){await material(solution[i]);await click('#design-launch');}
  assert.deepEqual((await read()).design.slots,solution);assert.ok((await read()).design.checks.every(r=>r.ok));
  await page.waitForTimeout(1250);await page.screenshot({path:`artifacts/launch-complete-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
@@ -63,5 +67,5 @@ try{for(const mobile of [false,true]){
  await page.reload();await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.savedDesign,solution);
  await click('#design-submit');assert.equal((await read()).coins,240);
  await context.close();
-}assert.deepEqual(errors,[]);console.log('PASS: 24 jewelry assets, real launches, rapid shots, mouse/touch drag, empty moves, occupied swaps, invalid/locked returns, Escape/touch cancellation, keyboard swap, stock conservation and persisted custom creations; no console errors.');
+}assert.deepEqual(errors,[]);console.log('PASS: 24 jewelry assets, real launches, rapid shots, mouse/touch drag, empty moves, occupied swaps, invalid returns and editable top sites, Escape/touch cancellation, keyboard swap, stock conservation and persisted custom creations; no console errors.');
 }finally{await browser.close();}

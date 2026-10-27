@@ -79,17 +79,16 @@ export class Board {
     for(let y=cy-r-35;y<cy+r+35;y+=18)this.rect(W/2,y,2,8,'#a9c8e8',0,.8);
     this.text('听 海 的 旧 约',W/2,cy-20,compact?24:27,'#275cad');
     this.text('左 右 对 称 · 随 你 搭 配',W/2,cy+22,15,'#6b8fb5');
-    this.text('拖 动 换 位 · 三 颗 旧 珠 原 位 保 留',W/2,35,14,'#416da5');
+    this.text('从 空 串 开 始 · 每 颗 珠 子 亲 手 串 起',W/2,35,14,'#416da5');
     const launcher=launcherPos();
     if(view.aim!==null&&view.aim!==undefined&&view.color!==null){for(let i=1;i<12;i++){const p=launchPoint(i/12,launcher,designPos(view.aim));this.circle(p.x,p.y,2.1,'#e3b951',1,.48);}}
-    view.slots.forEach((color,i)=>{const p=designPos(i),locked=[0,1,11].includes(i),size=designBeadSize();
+    view.slots.forEach((color,i)=>{const p=designPos(i),size=designBeadSize();
       this.circle(p.x+2,p.y+4,size*.43,'#b3ccea',0,.2);
       if(color!==null){const m=this.bead(`design-${i}`,color,p,size);m.userData.designSlot=i;}else{this.circle(p.x,p.y,size*.4,'#e9f5ff');this.ring(p.x,p.y,size*.4,'#bdd8f5');this.text(i===6?'粉晶':'＋',p.x,p.y,i===6?16:27,'#6c9acb');}
       this.rims.set(`design-${i}`,this.ring(p.x,p.y,size*.43,view.aim===i?'#e6b940':'#d7e7f8',3,view.aim===i?1:.18));
-      if(locked)this.ring(p.x,p.y,size*.43,'#deb650',3);
       if(view.selected===i)this.ring(p.x,p.y,size*.49,'#2587f5',4);
       const a=-Math.PI/2+i*Math.PI/6;
-      this.text(locked?'留':String(i+1),p.x+Math.cos(a)*(size*.54),p.y+Math.sin(a)*(size*.54),12,locked?'#99701c':'#7797b7');
+      this.text(String(i+1),p.x+Math.cos(a)*(size*.54),p.y+Math.sin(a)*(size*.54),12,'#7797b7');
     });
     this.circle(launcher.x,launcher.y+9,51,'#b2cce8',0,.35);this.circle(launcher.x,launcher.y,49,'#2877d6',1);this.ring(launcher.x,launcher.y,48,'#f3ca64',3);
     this.rect(launcher.x-49,launcher.y+5,7,46,'#dcb85e',3);this.rect(launcher.x+49,launcher.y+5,7,46,'#dcb85e',3);

@@ -48,7 +48,7 @@ function home(){
  $('#start-btn').onclick=()=>{tone();if(restoreValid(progress.session))start(progress.session.level,true);else start(nextIndex());};
  $('#collection-home').onclick=()=>gallery();$('#how-home').onclick=()=>help();
  $('.hero-copy p').innerHTML='留住旧珠，也留住你的搭配。<br>修复一份心意，做出真正属于你的手串。';
- $('.hero-copy').insertAdjacentHTML('beforeend',`<div class="special-entry"><span>NEW · 不止一种答案</span><button id="design-home-entry"><b>听海的旧约</b><small>保留旧珠，自选配色 →</small></button><button id="showcase-home">我的橱窗 <small>${progress.workshop?.design?'已收藏你的听海手串':'等待第一件原创搭配'}</small></button></div>`);
+ $('.hero-copy').insertAdjacentHTML('beforeend',`<div class="special-entry"><span>NEW · 不止一种答案</span><button id="design-home-entry"><b>听海的旧约</b><small>从空串开始，亲手搭配 →</small></button><button id="showcase-home">我的橱窗 <small>${progress.workshop?.design?'已收藏你的听海手串':'等待第一件原创搭配'}</small></button></div>`);
  $('#design-home-entry').onclick=startDesigner;$('#showcase-home').onclick=()=>showroom(designContext());
  if(progress.workshop?.design){$('.cover').outerHTML=`<div class="cover home-custom tray-${progress.workshop.tray}">${designBracelet(progress.workshop.design,art)}<span>我的作品 · 听海的旧约</span></div>`;$('.art-caption em').textContent='这一次，是你的搭配';}
 }

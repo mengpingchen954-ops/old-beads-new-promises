@@ -15,16 +15,16 @@ try{for(const mobile of [false,true]){
  const old=(await read()).state;await click('#go-home');
  await page.screenshot({path:`artifacts/design-home-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);
- await click('[data-slot="0"]');assert.equal((await read()).design.slots[0],3);
+ assert.deepEqual((await read()).design.slots,Array(12).fill(null));await click('[data-slot="0"]');assert.equal((await read()).design.slots[0],4);await click('#design-undo');
  await click('#design-submit');assert.equal((await read()).modal,false);assert.match(await page.locator('#design-status').textContent(),/还差一点/);
  // Exhaust a material, recover it, undo and reset through actual controls.
  for(const i of [2,3,4,5])await put(i,4);await put(6,4);assert.equal((await read()).design.slots[6],null);
  await put(2,'remove');await put(6,4);assert.equal((await read()).design.slots[6],4);
  await click('#design-undo');assert.equal((await read()).design.slots[6],null);
- await click('#design-reset');await click('#design-confirm-reset');assert.equal((await read()).design.slots.filter(c=>c!==null).length,3);
+ await click('#design-reset');await click('#design-confirm-reset');assert.equal((await read()).design.slots.filter(c=>c!==null).length,0);
  await put(2,4);await put(10,4);const partial=(await read()).design.slots;
  await page.reload();await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.slots,partial);
- for(const [i,c] of [[3,7],[9,7],[4,5],[8,5],[5,4],[7,4],[6,0]])await put(i,c);
+ for(const [i,c] of [[0,3],[1,3],[11,3],[3,7],[9,7],[4,5],[8,5],[5,4],[7,4],[6,0]])await put(i,c);
  assert.ok((await read()).design.checks.every(r=>r.ok));
  await page.waitForTimeout(850);await page.screenshot({path:`artifacts/design-play-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  if(!mobile){
