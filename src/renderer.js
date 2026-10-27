@@ -9,6 +9,7 @@ export const bufferPos=(i,capacity)=>({x:compact?(capacity===3?200+i*100:250+i*1
 export const orderPos=i=>({x:compact?180+i*300:741,y:compact?747:212+i*264});
 export function beadPos(i,j,count){const p=orderPos(i),a=-Math.PI/2+accentSlot(j,count)/BRACELET_SITES*Math.PI*2;return {x:p.x+Math.cos(a)*BRACELET_RADIUS,y:p.y+Math.sin(a)*BRACELET_RADIUS};}
 export function sourcePos(source,capacity){return source.type==='rail'?railPos(source.index):bufferPos(source.index,capacity);}
+export function designPos(i){const a=-Math.PI/2+i*Math.PI/6,r=compact?204:234;return {x:W/2+Math.cos(a)*r,y:(compact?335:342)+Math.sin(a)*r};}
 export class Board {
   constructor(host){
     this.host=host;this.scene=new THREE.Scene();this.camera=new THREE.OrthographicCamera(0,W,0,H,.1,100);this.camera.position.z=30;
@@ -17,11 +18,11 @@ export class Board {
     this.group=new THREE.Group();this.fx=new THREE.Group();this.scene.add(this.group,this.fx);this.effects=[];this.beads=new Map();this.rims=new Map();this.textures={};this.geometry=new THREE.PlaneGeometry(1,1);this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);this.resize();
     this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.cancelFeedback();this.host.dispatchEvent(new Event('board-lost'));});
-    this.renderer.domElement.addEventListener('webglcontextrestored',()=>{if(this.last)this.draw(...this.last);this.host.dispatchEvent(new Event('board-restored'));});
+    this.renderer.domElement.addEventListener('webglcontextrestored',()=>{if(this.designView)this.drawDesign(this.designView);else if(this.last)this.draw(...this.last);this.host.dispatchEvent(new Event('board-restored'));});
   }
   mount(host){this.cancelFeedback();this.resizeObserver.disconnect();this.host=host;host.prepend(this.renderer.domElement);this.resizeObserver.observe(host);this.resize();}
   async load(){const loader=new THREE.TextureLoader();await Promise.all(['workbench',...COLORS.map(c=>c.file)].map(async name=>{const t=await loader.loadAsync(`${import.meta.env.BASE_URL}art/${name}.svg`);t.colorSpace=THREE.SRGBColorSpace;this.textures[name]=t;}));}
-  resize(){const next=innerWidth<=600,changed=next!==compact;if(changed)this.cancelFeedback();compact=next;W=compact?660:1000;H=compact?910:700;this.host.style.aspectRatio=`${W}/${H}`;this.camera.right=W;this.camera.bottom=H;this.camera.updateProjectionMatrix();const r=this.host.getBoundingClientRect();this.renderer.setSize(r.width,r.height,false);if(changed&&this.last){this.draw(...this.last);this.host.dispatchEvent(new Event('board-layout'));}else this.render();}
+  resize(){const next=innerWidth<=600,changed=next!==compact;if(changed)this.cancelFeedback();compact=next;W=compact?660:1000;H=compact?(this.designView?740:910):700;this.host.style.aspectRatio=`${W}/${H}`;this.camera.right=W;this.camera.bottom=H;this.camera.updateProjectionMatrix();const r=this.host.getBoundingClientRect();this.renderer.setSize(r.width,r.height,false);if(changed&&(this.last||this.designView)){if(this.designView)this.drawDesign(this.designView);else this.draw(...this.last);this.host.dispatchEvent(new Event('board-layout'));}else this.render();}
   clear(){for(const o of [...this.group.children]){this.group.remove(o);if(o.geometry!==this.geometry)o.geometry?.dispose();if(o.material?.map?.userData?.temporary)o.material.map.dispose();o.material?.dispose();}}
   plane(x,y,w,h,material,z=0){material.side=THREE.DoubleSide;const mesh=new THREE.Mesh(this.geometry,material);mesh.position.set(x,y,z);mesh.scale.set(w,-h,1);this.group.add(mesh);return mesh;}
   rect(x,y,w,h,color,z=0,opacity=1){return this.plane(x,y,w,h,new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthWrite:false}),z);}
@@ -36,6 +37,7 @@ export class Board {
     this.plane(x,y,c.width/2,c.height/2,new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}),4);
   }
   draw(state,level,selected,hint){
+    this.designView=null;if(compact&&H!==910)this.resize();
     this.last=[state,level,selected,hint];this.clear();this.beads.clear();this.rims.clear();
     this.image('workbench',W/2,H/2,W,H,-5);
     this.text('料 杆 · 只 能 从 左 端 取 珠',compact?330:287,compact?82:90,17,'#5d6655');
@@ -64,6 +66,27 @@ export class Board {
       const next=goal[done.length];this.text(next===undefined?'已完成 ✓':`下一颗 · ${COLORS[next].name}${COLORS[next].symbol}`,p.x,p.y+136,16,next===undefined?'#3c7255':'#6d735d');
     });
     if(hint){const p=sourcePos(hint.source,level.capacity),q=hint.target.type==='order'?orderPos(hint.target.index):bufferPos(hint.target.index,level.capacity);this.ring(p.x,p.y,45,'#ba9146',4);this.ring(q.x,q.y,hint.target.type==='order'?112:45,'#ba9146',4);}
+    this.frame(performance.now());
+  }
+  drawDesign(view){
+    this.designView=view;this.last=null;if(compact&&H!==740)this.resize();this.clear();this.beads.clear();this.rims.clear();
+    this.image('workbench',W/2,H/2,W,H,-5);
+    const cy=compact?335:342,r=compact?204:234;
+    this.circle(W/2+4,cy+9,r+74,'#b0c9e4',-3,.22);this.circle(W/2,cy,r+68,'#ffffff',-2);this.ring(W/2,cy,r+65,'#d9b66a',-1);
+    this.ring(W/2,cy,r,'#c6a45c');
+    for(let y=cy-r-35;y<cy+r+35;y+=18)this.rect(W/2,y,2,8,'#a9c8e8',0,.8);
+    this.text('听 海 的 旧 约',W/2,cy-20,compact?24:27,'#275cad');
+    this.text('左 右 对 称 · 随 你 搭 配',W/2,cy+22,15,'#6b8fb5');
+    this.text('三颗旧珠，留在原来的位置',W/2,compact?58:44,16,'#416da5');
+    view.slots.forEach((color,i)=>{const p=designPos(i),locked=[0,1,11].includes(i),size=compact?100:112;
+      this.circle(p.x+2,p.y+4,size*.43,'#b3ccea',0,.2);
+      if(color!==null)this.bead(`design-${i}`,color,p,size);else{this.circle(p.x,p.y,size*.43,'#e9f5ff');this.ring(p.x,p.y,size*.43,'#bdd8f5');this.text(i===6?'粉晶':'＋',p.x,p.y,i===6?16:27,'#6c9acb');}
+      if(locked)this.ring(p.x,p.y,size*.43,'#deb650',3);
+      if(view.selected===i)this.ring(p.x,p.y,size*.49,'#2587f5',4);
+      const a=-Math.PI/2+i*Math.PI/6;
+      this.text(locked?'留':String(i+1),p.x+Math.cos(a)*(size*.65),p.y+Math.sin(a)*(size*.65),14,locked?'#99701c':'#7797b7');
+    });
+    this.text('选择下方材料，再点珠位 · 选“取下”即可回收',W/2,compact?671:659,compact?16:15,'#426fa5');
     this.frame(performance.now());
   }
   sourceKey(source){return source.type==='rail'?`rail-${source.index}-0`:`buffer-${source.index}`;}
