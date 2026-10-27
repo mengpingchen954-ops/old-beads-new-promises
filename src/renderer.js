@@ -83,9 +83,8 @@ export class Board {
     const launcher=launcherPos();
     if(view.aim!==null&&view.aim!==undefined&&view.color!==null){for(let i=1;i<12;i++){const p=launchPoint(i/12,launcher,designPos(view.aim));this.circle(p.x,p.y,2.1,'#e3b951',1,.48);}}
     view.slots.forEach((color,i)=>{const p=designPos(i),size=designBeadSize();
-      this.circle(p.x+2,p.y+4,size*.43,'#b3ccea',0,.2);
-      if(color!==null){const m=this.bead(`design-${i}`,color,p,size);m.userData.designSlot=i;}else{this.circle(p.x,p.y,size*.4,'#e9f5ff');this.ring(p.x,p.y,size*.4,'#bdd8f5');this.text(i===6?'粉晶':'＋',p.x,p.y,i===6?16:27,'#6c9acb');}
-      this.rims.set(`design-${i}`,this.ring(p.x,p.y,size*.43,view.aim===i?'#e6b940':'#d7e7f8',3,view.aim===i?1:.18));
+      if(color!==null){this.circle(p.x+2,p.y+4,size*.43,'#b3ccea',0,.2);const m=this.bead(`design-${i}`,color,p,size);m.userData.designSlot=i;}else this.text('＋',p.x,p.y,18,'#a5bfd7');
+      this.rims.set(`design-${i}`,this.ring(p.x,p.y,color===null?10:size*.43,view.aim===i?'#e6b940':'#d7e7f8',3,view.aim===i?.7:.18));
       if(view.selected===i)this.ring(p.x,p.y,size*.49,'#2587f5',4);
       const a=-Math.PI/2+i*Math.PI/6;
       this.text(String(i+1),p.x+Math.cos(a)*(size*.54),p.y+Math.sin(a)*(size*.54),12,'#7797b7');

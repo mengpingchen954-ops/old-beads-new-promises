@@ -23,7 +23,7 @@ try{for(const mobile of [false,true]){
  await click('#design-undo');assert.equal((await read()).design.slots[6],null);
  await click('#design-reset');await click('#design-confirm-reset');assert.equal((await read()).design.slots.filter(c=>c!==null).length,0);
  await put(2,4);await put(10,4);const partial=(await read()).design.slots;
- await page.reload();await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.slots,partial);
+ await page.reload();await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.slots,Array(12).fill(null));await click('#design-resume');assert.deepEqual((await read()).design.slots,partial);
  for(const [i,c] of [[0,3],[1,3],[11,3],[3,7],[9,7],[4,5],[8,5],[5,4],[7,4],[6,0]])await put(i,c);
  assert.ok((await read()).design.checks.every(r=>r.ok));
  await page.waitForTimeout(850);await page.screenshot({path:`artifacts/design-play-${mobile?'mobile':'desktop'}.png`,fullPage:true});
@@ -40,6 +40,7 @@ try{for(const mobile of [false,true]){
  await page.screenshot({path:`artifacts/design-showcase-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  await click('#showcase-design');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);
  // A second valid answer changes the actual saved creation without duplicate reward.
+ assert.deepEqual((await read()).design.slots,Array(12).fill(null));await click('#design-resume');
  for(const [i,c] of [[2,7],[10,7],[3,4],[9,4]])await put(i,c);
  assert.ok((await read()).design.checks.every(r=>r.ok));await click('#design-submit');assert.equal((await read()).coins,60);assert.match(await page.locator('.coin-settlement strong').textContent(),/更新/);
  await click('#modal .modal-close');await click('#design-home');assert.equal(await page.locator('.home-custom .design-bracelet img').count(),12);await page.screenshot({path:`artifacts/design-home-showcase-${mobile?'mobile':'desktop'}.png`,fullPage:true});await click('#start-btn');assert.deepEqual((await read()).state,old);

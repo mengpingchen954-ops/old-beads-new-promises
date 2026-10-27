@@ -65,7 +65,12 @@ try{for(const mobile of [false,true]){
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  await click('#design-submit');assert.equal((await read()).coins,240);await page.waitForTimeout(700);await page.screenshot({path:`artifacts/launch-reward-${mobile?'mobile':'desktop'}.png`,fullPage:true});
  await page.reload();await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.savedDesign,solution);
+ assert.deepEqual((await read()).design.slots,Array(12).fill(null));assert.equal((await read()).design.hasSavedDraft,true);assert.equal((await read()).coins,240);assert.match(await page.locator('#design-count').textContent(),/0 \/ 12/);
+ await page.screenshot({path:`artifacts/saved-empty-entry-${mobile?'mobile':'desktop'}.png`,fullPage:true});
+ await click('#design-resume');assert.deepEqual((await read()).design.slots,solution);
  await click('#design-submit');assert.equal((await read()).coins,240);
+ await click('#modal .modal-close');await click('#design-home');await click('#design-home-entry');await page.waitForFunction(()=>JSON.parse(render_game_to_text()).design);assert.deepEqual((await read()).design.slots,Array(12).fill(null));
+ await click('#design-launch');assert.equal((await read()).design.slots.filter(c=>c!==null).length,1);assert.equal((await read()).design.slots[0],4);assert.equal((await read()).coins,240);assert.deepEqual((await read()).design.savedDesign,solution);assert.equal(await page.locator('#design-resume').isVisible(),false);
  await context.close();
 }assert.deepEqual(errors,[]);console.log('PASS: 24 jewelry assets, real launches, rapid shots, mouse/touch drag, empty moves, occupied swaps, invalid returns and editable top sites, Escape/touch cancellation, keyboard swap, stock conservation and persisted custom creations; no console errors.');
 }finally{await browser.close();}
