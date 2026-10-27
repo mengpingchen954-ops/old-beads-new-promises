@@ -1,12 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {freshDesign,validDraft,placeBead,designWon,loadWorkshop,finishDesign,buyTray} from '../src/design-rules.js';
+import {MATERIALS,freshDesign,validDraft,placeBead,swapBeads,remaining,designWon,loadWorkshop,finishDesign,buyTray} from '../src/design-rules.js';
 import {loadProgress} from '../src/model.js';
 const example=[3,3,4,7,5,4,0,4,5,7,4,3];
 test('finite materials cannot be duplicated; legacy beads cannot be changed; replacement returns stock',()=>{
  const initial=freshDesign();assert.equal(placeBead(initial,0,4),null);assert.equal(placeBead(initial,-1,4),null);assert.equal(placeBead(initial,2,99),null);
  let slots=initial;for(const i of [2,3,4,5])slots=placeBead(slots,i,4);
  assert.equal(placeBead(slots,6,4),null);slots=placeBead(slots,2,7);assert.ok(placeBead(slots,6,4));assert.equal(initial[2],null);assert.ok(validDraft(slots));
+});
+test('dragging swaps or moves existing beads without changing stock or modifying locked pearls',()=>{
+ const s=placeBead(freshDesign(),2,20),t=placeBead(s,3,23),swapped=swapBeads(t,2,3);
+ assert.equal(swapped[2],23);assert.equal(swapped[3],20);assert.equal(t[2],20);
+ for(const {color} of MATERIALS)assert.equal(remaining(swapped,color),remaining(t,color));
+ const moved=swapBeads(swapped,2,4);assert.equal(moved[2],null);assert.equal(moved[4],23);
+ for(const [a,b] of [[0,2],[2,0],[4,4],[6,7],[-1,4],[4,12]])assert.equal(swapBeads(moved,a,b),null);
+ assert.equal(remaining(freshDesign(),3),4);assert.ok(placeBead(freshDesign(),2,3));
+});
+test('expanded sea jewelry and shape charms can make a valid persisted commission',()=>{
+ const slots=[3,3,10,19,23,22,0,22,23,19,10,3];assert.ok(designWon(slots));
+ assert.deepEqual(loadWorkshop({draft:slots,design:slots}).design,slots);
+ assert.equal(MATERIALS.length,24);
 });
 test('commission admits many distinct complete designs and rejects incomplete, asymmetric or wrong focal choices',()=>{
  assert.ok(designWon(example));assert.equal(designWon(freshDesign()),false);assert.equal(designWon([...example.slice(0,6),7,...example.slice(7)]),false);

@@ -9,7 +9,21 @@ export const MATERIALS = [
   {hz:980,decay:.095,partials:[1,1.31,2.43],noise:.2},
   {hz:1540,decay:.14,partials:[1,1.67,2.84],noise:.12},
   {hz:1120,decay:.22,partials:[1,1.38,2.18],noise:.06},
-  {hz:2010,decay:.08,partials:[1,1.57,2.76],noise:.18}
+  {hz:2010,decay:.08,partials:[1,1.57,2.76],noise:.18},
+  {hz:2380,decay:.17,partials:[1,1.52,2.61],noise:.06},
+  {hz:1380,decay:.10,partials:[1,1.72,2.48],noise:.19},
+  {hz:2920,decay:.21,partials:[1,1.36,2.74],noise:.04},
+  {hz:1060,decay:.09,partials:[1,1.83,2.32],noise:.22},
+  {hz:910,decay:.08,partials:[1,1.61,3.08],noise:.27},
+  {hz:1680,decay:.13,partials:[1,1.41,2.62],noise:.10},
+  {hz:1820,decay:.07,partials:[1,1.91,2.38],noise:.15},
+  {hz:460,decay:.055,partials:[1,2.13,3.27],noise:.34},
+  {hz:1230,decay:.085,partials:[1,1.58,2.94],noise:.18},
+  {hz:2540,decay:.23,partials:[1,1.34,2.71],noise:.04},
+  {hz:2030,decay:.18,partials:[1,1.56,2.41],noise:.07},
+  {hz:3150,decay:.27,partials:[1,1.43,2.08],noise:.03},
+  {hz:2240,decay:.14,partials:[1,1.74,2.67],noise:.1},
+  {hz:2780,decay:.20,partials:[1,1.46,2.35],noise:.05}
 ];
 function partial(ctx,out,hz,time,duration,gain,type='sine'){
   const osc=ctx.createOscillator(),env=ctx.createGain();osc.type=type;
@@ -36,6 +50,11 @@ export function synthesize(ctx,out,event,{color=0,target='order',pan=0,strength=
     brush(ctx,bus,at,(wood ? .24 : m.noise)*energy*.25);
   };
   if(event==='pick'){brush(ctx,bus,time,.055,.045);partial(ctx,bus,m.hz*.7*pitch,time,.065,.035);}
+  if(event==='launch'){
+    const osc=ctx.createOscillator(),env=ctx.createGain();osc.type='triangle';osc.frequency.setValueAtTime(180,time);osc.frequency.exponentialRampToValueAtTime(720,time+.12);
+    env.gain.setValueAtTime(.055,time);env.gain.exponentialRampToValueAtTime(.00001,time+.14);osc.connect(env);env.connect(bus);osc.start(time);osc.stop(time+.15);
+    osc.onended=()=>{osc.disconnect();env.disconnect();};brush(ctx,bus,time,.08,.09);
+  }
   if(event==='land'){
     contact(time,1,target==='buffer');contact(time+.038,.32,target==='buffer');
     if(target==='order')contact(time+.078,.14);

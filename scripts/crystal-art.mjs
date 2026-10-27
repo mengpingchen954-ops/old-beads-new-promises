@@ -11,7 +11,16 @@ export const crystalProfiles=[
  {name:'garnet',absorb:[.22,.035,.06],tint:[217,70,92],cloud:[246,133,145],rough:.16,kind:'garnet'},
  {name:'turquoise',absorb:[.015,.10,.085],tint:[39,188,177],cloud:[114,224,204],rough:.13,kind:'turquoise'},
  {name:'smoky',absorb:[.08,.07,.02],tint:[112,128,176],cloud:[177,190,221],rough:.24,kind:'smoky'},
- {name:'citrine',absorb:[.01,.08,.18],tint:[242,137,46],cloud:[255,197,103],rough:.09,kind:'citrine'}
+ {name:'citrine',absorb:[.01,.08,.18],tint:[242,137,46],cloud:[255,197,103],rough:.09,kind:'citrine'},
+ {name:'blue-moon',absorb:[.05,.03,.005],tint:[129,182,245],cloud:[220,237,255],rough:.12,kind:'moon'},
+ {name:'strawberry',absorb:[.01,.1,.07],tint:[242,135,164],cloud:[244,185,200],rough:.2,kind:'strawberry'},
+ {name:'ice-quartz',absorb:[.03,.015,.005],tint:[207,233,250],cloud:[255,255,255],rough:.08,kind:'ice'},
+ {name:'malachite',absorb:[.14,.01,.11],tint:[28,151,98],cloud:[120,222,151],rough:.3,kind:'malachite'},
+ {name:'tiger-eye',absorb:[.01,.08,.19],tint:[193,133,38],cloud:[255,214,103],rough:.15,kind:'tiger'},
+ {name:'obsidian',absorb:[.2,.2,.12],tint:[36,33,64],cloud:[118,104,167],rough:.08,kind:'obsidian'},
+ {name:'shell',absorb:[.005,.02,.04],tint:[252,231,190],cloud:[255,247,232],rough:.2,kind:'shell'},
+ {name:'sandalwood',absorb:[.02,.09,.16],tint:[155,83,34],cloud:[221,157,90],rough:.3,kind:'wood'},
+ {name:'carnelian',absorb:[.005,.12,.2],tint:[248,122,56],cloud:[255,190,111],rough:.16,kind:'carnelian'}
 ];
 function crc(data){let c=0xffffffff;for(const byte of data){c^=byte;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^0xffffffff)>>>0;}
 function chunk(type,data){const name=Buffer.from(type),out=Buffer.alloc(12+data.length);out.writeUInt32BE(data.length);name.copy(out,4);data.copy(out,8);out.writeUInt32BE(crc(Buffer.concat([name,data])),8+data.length);return out;}
@@ -46,6 +55,27 @@ export function crystalData(name){
      if(profile.kind==='moss')cloud=clamp((cloudNoise(x*1.4,y*1.3,z)-.48)*4.2)*.38;
      if(profile.kind==='amethyst')cloud=clamp((cloudNoise(x*1.5,y,z)-.38)*1.2)*.22;
      rgb=rgb.map((v,i)=>mix(v,profile.cloud[i],cloud));
+     if(profile.kind==='malachite'){
+       const band=(Math.sin(Math.hypot(x+.5,y-.1)*43+n*5)+1)/2;
+       rgb=profile.tint.map((v,i)=>mix(v,[143,231,164][i],band*.58)*(.76+.24*light));
+     }
+     if(profile.kind==='tiger'){
+       const band=(Math.sin(x*42+Math.sin(y*4)*3)+1)/2,eye=Math.exp(-((x+y*.25-.03)**2)/.016);
+       rgb=[104,59,20].map((v,i)=>mix(mix(v,profile.tint[i],band*.48),[255,223,112][i],eye*.92));
+     }
+     if(profile.kind==='wood'){
+       const grain=(Math.sin(y*76+Math.sin(x*7)*2+n*8)+1)/2;
+       rgb=profile.tint.map((v,i)=>mix(v*.56,profile.cloud[i],grain*.48)*(.7+.3*light));
+     }
+     if(profile.kind==='obsidian')rgb=profile.tint.map((v,i)=>v*(.7+.8*light)+profile.cloud[i]*Math.exp(-((x-.24)**2/.05+(y-.1)**2/.25))*.32);
+     if(profile.kind==='strawberry'){
+       const fleck=hash(Math.floor(x*64),Math.floor(y*64),7)>.969&&z>.2;
+       if(fleck)rgb=rgb.map((v,i)=>mix(v,[180,46,83][i],.58));
+     }
+     if(profile.kind==='shell'){
+       const nacre=(Math.sin((x+y*.4)*28+n*4)+1)/2;
+       rgb=rgb.map((v,i)=>mix(v,[255,224,218][i],nacre*.3));
+     }
      // Internal fractures catch light behind the surface, rather than forming painted outlines.
      let lines=0;
      for(const f of fibers){
@@ -54,7 +84,8 @@ export function crystalData(name){
        const distance=Math.hypot(x-f.ax-dx*t,y-f.ay-dy*t+bend);
        lines+=Math.exp(-((distance/.004)**2))*(.22+n*.4)*clamp(z*3);
      }
-     rgb=rgb.map((v,i)=>mix(v,profile.kind==='rutile'?[158,113,41][i]:[252,251,244][i],clamp(lines)*(profile.kind==='moon'?.15:.65)));
+     const fracture=profile.kind==='ice'?1.5:['wood','malachite','tiger','obsidian'].includes(profile.kind)?0:profile.kind==='moon'?.15:.65;
+     rgb=rgb.map((v,i)=>mix(v,profile.kind==='rutile'?[158,113,41][i]:[252,251,244][i],clamp(clamp(lines)*fracture)));
      if(profile.kind==='moon'){
      const blueGlow=Math.exp(-((x-.24)**2/.14+(y+.06)**2/.3))*.32;
        rgb=rgb.map((v,i)=>mix(v,[112,178,245][i],blueGlow));

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {COLORS} from './model.js';
-import {flightPoint,rebound} from './feedback.js';
+import {flightPoint,launchPoint,rebound} from './feedback.js';
 import {accentSlot,braceletLayout,BRACELET_SITES,BRACELET_RADIUS,BRACELET_BEAD_SIZE} from './jewelry.js';
 export let W=1000,H=700;
 let compact=false;
@@ -9,7 +9,9 @@ export const bufferPos=(i,capacity)=>({x:compact?(capacity===3?200+i*100:250+i*1
 export const orderPos=i=>({x:compact?180+i*300:741,y:compact?747:212+i*264});
 export function beadPos(i,j,count){const p=orderPos(i),a=-Math.PI/2+accentSlot(j,count)/BRACELET_SITES*Math.PI*2;return {x:p.x+Math.cos(a)*BRACELET_RADIUS,y:p.y+Math.sin(a)*BRACELET_RADIUS};}
 export function sourcePos(source,capacity){return source.type==='rail'?railPos(source.index):bufferPos(source.index,capacity);}
-export function designPos(i){const a=-Math.PI/2+i*Math.PI/6,r=compact?204:234;return {x:W/2+Math.cos(a)*r,y:(compact?335:342)+Math.sin(a)*r};}
+export function designPos(i){const a=-Math.PI/2+i*Math.PI/6,r=compact?177:190;return {x:W/2+Math.cos(a)*r,y:(compact?278:305)+Math.sin(a)*r};}
+export const launcherPos=()=>({x:W/2,y:compact?622:623});
+export const designBeadSize=()=>compact?120:124;
 export class Board {
   constructor(host){
     this.host=host;this.scene=new THREE.Scene();this.camera=new THREE.OrthographicCamera(0,W,0,H,.1,100);this.camera.position.z=30;
@@ -71,22 +73,28 @@ export class Board {
   drawDesign(view){
     this.designView=view;this.last=null;if(compact&&H!==740)this.resize();this.clear();this.beads.clear();this.rims.clear();
     this.image('workbench',W/2,H/2,W,H,-5);
-    const cy=compact?335:342,r=compact?204:234;
+    const cy=compact?278:305,r=compact?177:190;
     this.circle(W/2+4,cy+9,r+74,'#b0c9e4',-3,.22);this.circle(W/2,cy,r+68,'#ffffff',-2);this.ring(W/2,cy,r+65,'#d9b66a',-1);
     this.ring(W/2,cy,r,'#c6a45c');
     for(let y=cy-r-35;y<cy+r+35;y+=18)this.rect(W/2,y,2,8,'#a9c8e8',0,.8);
     this.text('听 海 的 旧 约',W/2,cy-20,compact?24:27,'#275cad');
     this.text('左 右 对 称 · 随 你 搭 配',W/2,cy+22,15,'#6b8fb5');
-    this.text('三颗旧珠，留在原来的位置',W/2,compact?58:44,16,'#416da5');
-    view.slots.forEach((color,i)=>{const p=designPos(i),locked=[0,1,11].includes(i),size=compact?100:112;
+    this.text('拖 动 换 位 · 三 颗 旧 珠 原 位 保 留',W/2,35,14,'#416da5');
+    const launcher=launcherPos();
+    if(view.aim!==null&&view.aim!==undefined&&view.color!==null){for(let i=1;i<12;i++){const p=launchPoint(i/12,launcher,designPos(view.aim));this.circle(p.x,p.y,2.1,'#e3b951',1,.48);}}
+    view.slots.forEach((color,i)=>{const p=designPos(i),locked=[0,1,11].includes(i),size=designBeadSize();
       this.circle(p.x+2,p.y+4,size*.43,'#b3ccea',0,.2);
-      if(color!==null)this.bead(`design-${i}`,color,p,size);else{this.circle(p.x,p.y,size*.43,'#e9f5ff');this.ring(p.x,p.y,size*.43,'#bdd8f5');this.text(i===6?'粉晶':'＋',p.x,p.y,i===6?16:27,'#6c9acb');}
+      if(color!==null){const m=this.bead(`design-${i}`,color,p,size);m.userData.designSlot=i;}else{this.circle(p.x,p.y,size*.4,'#e9f5ff');this.ring(p.x,p.y,size*.4,'#bdd8f5');this.text(i===6?'粉晶':'＋',p.x,p.y,i===6?16:27,'#6c9acb');}
+      this.rims.set(`design-${i}`,this.ring(p.x,p.y,size*.43,view.aim===i?'#e6b940':'#d7e7f8',3,view.aim===i?1:.18));
       if(locked)this.ring(p.x,p.y,size*.43,'#deb650',3);
       if(view.selected===i)this.ring(p.x,p.y,size*.49,'#2587f5',4);
       const a=-Math.PI/2+i*Math.PI/6;
-      this.text(locked?'留':String(i+1),p.x+Math.cos(a)*(size*.65),p.y+Math.sin(a)*(size*.65),14,locked?'#99701c':'#7797b7');
+      this.text(locked?'留':String(i+1),p.x+Math.cos(a)*(size*.54),p.y+Math.sin(a)*(size*.54),12,locked?'#99701c':'#7797b7');
     });
-    this.text('选择下方材料，再点珠位 · 选“取下”即可回收',W/2,compact?671:659,compact?16:15,'#426fa5');
+    this.circle(launcher.x,launcher.y+9,51,'#b2cce8',0,.35);this.circle(launcher.x,launcher.y,49,'#2877d6',1);this.ring(launcher.x,launcher.y,48,'#f3ca64',3);
+    this.rect(launcher.x-49,launcher.y+5,7,46,'#dcb85e',3);this.rect(launcher.x+49,launcher.y+5,7,46,'#dcb85e',3);
+    if(view.color!==null)this.bead('launcher',view.color,launcher,86);
+    this.text(view.color===null?'取下模式':'点 此 弹 射',W/2,compact?699:687,15,'#2e65ad');
     this.frame(performance.now());
   }
   sourceKey(source){return source.type==='rail'?`rail-${source.index}-0`:`buffer-${source.index}`;}
@@ -96,9 +104,14 @@ export class Board {
   beginDrag(source,color,point,touch=false){
     this.releaseDrag();this.interruptSource(source);this.drag={key:this.sourceKey(source),source,color,point,contacts:new Set(),origin:sourcePos(source,this.last[1].capacity),touch,mesh:this.floating(color,point),shadow:this.circle(point.x,point.y,28,'#594b36',9,.16)};this.fx.add(this.drag.shadow);this.moveDrag(point);return true;
   }
+  beginDesignDrag(index,color,point,touch=false){
+    this.releaseDrag();this.cancelFlights([index]);const size=designBeadSize();
+    this.drag={key:`design-${index}`,source:{type:'design',index},color,point,contacts:new Set(),origin:designPos(index),touch,size,mesh:this.floating(color,point,size),shadow:this.circle(point.x,point.y,30,'#594b36',9,.16)};
+    this.fx.add(this.drag.shadow);this.moveDrag(point);return true;
+  }
   moveDrag(point,target=null,valid=false){
     if(!this.drag)return;const d=this.drag;d.point={x:point.x,y:point.y-(d.touch?62:18)};
-    d.mesh.position.set(d.point.x,d.point.y,12);d.mesh.scale.set(92,-92,1);d.mesh.rotation.z=Math.max(-.25,Math.min(.25,(d.point.x-d.origin.x)*.0007));
+    d.mesh.position.set(d.point.x,d.point.y,12);d.mesh.scale.set(d.size??92,-(d.size??92),1);d.mesh.rotation.z=Math.max(-.25,Math.min(.25,(d.point.x-d.origin.x)*.0007));
     d.shadow.position.set(d.point.x+6,d.point.y+25,9);d.shadow.scale.set(1.15,.38,1);
     if(!this.reduced){
       const touching=new Set();
@@ -117,12 +130,15 @@ export class Board {
   releaseDrag(){
     if(!this.drag)return null;const d=this.drag;this.removeFx(d.mesh);this.removeFx(d.shadow);this.drag=null;this.dragTarget=null;return d;
   }
-  cancelDrag(){const d=this.releaseDrag();if(!d)return;this.animate(d.color,d.point,d.origin,{key:d.key,returning:true});}
-  animate(color,from,to,{key,target,source,returning=false,onImpact}={}){
+  cancelDrag(){const d=this.releaseDrag();if(!d)return;this.animate(d.color,d.point,d.origin,{key:d.key,returning:true,endSize:d.size});}
+  cancelFlights(slots){for(const e of [...this.effects])if(slots.some(i=>e.key===`design-${i}`)){this.removeFx(e.mesh);this.removeFx(e.shadow);this.effects.splice(this.effects.indexOf(e),1);}}
+  animate(color,from,to,{key,target,source,returning=false,onImpact,launch=false,endSize}={}){
     if(this.reduced){onImpact?.();this.render();return;}
     if(source?.type==='rail')for(const e of this.effects)if(e.source?.type==='rail'&&e.source.index===source.index)e.source=null;
     const mesh=this.floating(color,from),shadow=this.circle(from.x,from.y+18,25,'#594b36',8,.12);this.fx.add(shadow);
-    this.effects.push({type:'flight',mesh,shadow,color,from,to,key,target,source,returning,onImpact,start:performance.now(),duration:returning?180:260,landed:false});this.frame(performance.now());
+    this.effects.push({type:'flight',mesh,shadow,color,from,to,key,target,source,returning,onImpact,launch,endSize,start:performance.now(),duration:returning?180:launch?560:260,landed:false});
+    if(launch)this.effects.push({type:'recoil',key:'launcher',start:performance.now(),duration:340});
+    this.frame(performance.now());
   }
   reject(target){
     const p=target.type==='order'?orderPos(target.index):bufferPos(target.index,this.last[1].capacity),ring=this.ring(p.x,p.y,target.type==='order'?109:43,'#ac6446',7,.8);this.fx.add(ring);
@@ -149,8 +165,8 @@ export class Board {
       if(e.type==='flight'){
         const dest=this.beads.get(e.key);
         if(age<e.duration){
-          if(dest)dest.visible=false;const p=flightPoint(t,e.from,e.to,e.returning?12:35),size=83+(e.target?.type==='order'?BRACELET_BEAD_SIZE-83:0)*t;
-          e.mesh.position.set(p.x,p.y,12);e.mesh.scale.set(size,-size,1);e.mesh.rotation.z=Math.sin(t*Math.PI)*.19;
+          if(dest)dest.visible=false;const p=e.launch?launchPoint(t,e.from,e.to):flightPoint(t,e.from,e.to,e.returning?12:35),size=83+((e.endSize??(e.target?.type==='order'?BRACELET_BEAD_SIZE:83))-83)*t;
+          e.mesh.position.set(p.x,p.y,12);e.mesh.scale.set(size,-size,1);e.mesh.rotation.z=Math.sin(t*Math.PI)*(e.launch ? .8 : .19);
           e.shadow.position.set(p.x+3,p.y+14+Math.sin(t*Math.PI)*16,8);e.shadow.scale.set(.8,.25,1);e.shadow.material.opacity=.12*(1-.5*Math.sin(t*Math.PI));
           if(e.source?.type==='rail')for(let j=0;j<5;j++){const m=this.beads.get(`rail-${e.source.index}-${j}`);if(m){m.position.x+=(compact?93:81)*(1-t)**3;m.rotation.z=rebound(age/1000, .12);}}
         }else if(!e.landed){e.landed=true;if(e.returning)e.onImpact?.();else this.impact(e,now);}
@@ -158,7 +174,10 @@ export class Board {
         const spring=rebound(age/1000),m=this.beads.get(e.key);if(m){m.position.y+=spring*7;m.scale.x*=1+spring*.09;m.scale.y*=1-spring*.07;m.rotation.z=spring*.12;}
         const rim=this.rims.get(`${e.target?.type}-${e.target?.index}`);if(rim)rim.scale.setScalar(1+spring*.018);
         if(e.target?.type==='order'&&m)for(const neighbor of this.beads.values()){const d=neighbor.userData,delta=(d.slot-m.userData.slot+BRACELET_SITES)%BRACELET_SITES;if(d.order===e.target.index&&(delta===1||delta===BRACELET_SITES-1)&&d.opacity===1){const wave=rebound(age/1000-.035,.65);neighbor.rotation.z=wave*.16;neighbor.position.y+=wave*4;}}
+        if(e.target?.type==='design'&&m)for(const neighbor of this.beads.values()){const delta=(neighbor.userData.designSlot-e.target.index+12)%12;if(delta===1||delta===11){const wave=rebound(age/1000-.035,.65);neighbor.rotation.z=wave*.12;neighbor.position.y+=wave*4;}}
         e.mesh.scale.setScalar(1+t*1.8);e.mesh.material.opacity=.6*(1-t)**2;
+      }else if(e.type==='recoil'){
+        const m=this.beads.get('launcher');if(m){const spring=Math.sin(t*Math.PI)*Math.exp(-t*3);m.position.y+=spring*18;m.scale.x*=1+spring*.2;m.scale.y*=1-spring*.18;}
       }else if(e.type==='contact'){
         const m=this.beads.get(e.key),s=rebound(age/1000+.02);if(m){m.position.x+=s*e.dx;m.position.y+=s*e.dy;m.rotation.z+=s*.14;}
       }else if(e.type==='thread'){

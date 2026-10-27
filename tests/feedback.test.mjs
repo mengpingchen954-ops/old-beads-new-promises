@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {flightPoint,rebound} from '../src/feedback.js';
+import {flightPoint,launchPoint,rebound} from '../src/feedback.js';
 import {loadProgress} from '../src/model.js';
 import {AtelierAudio} from '../src/audio.js';
 test('flights land on the exact bead slot and never overshoot in x',()=>{
@@ -11,6 +11,13 @@ test('flights land on the exact bead slot and never overshoot in x',()=>{
 test('collision response is finite, reverses direction and returns fully to rest',()=>{
   assert.equal(rebound(0),0);assert.ok(rebound(.04)>0);assert.ok(rebound(.12)<0);
   assert.ok(Math.abs(rebound(.6))<.005);assert.equal(rebound(.7),0);assert.equal(rebound(-1),0);
+});
+test('launches start at the emitter, arc above the direct path and land exactly in either direction',()=>{
+ const from={x:500,y:623};
+ for(const to of [{x:310,y:305},{x:690,y:305},{x:500,y:495}]){
+  assert.deepEqual(launchPoint(-1,from,to),from);assert.deepEqual(launchPoint(2,from,to),to);
+  for(let t=.01;t<1;t+=.02){const p=launchPoint(t,from,to),e=1-(1-t)**1.3;assert.ok(p.y<from.y+(to.y-from.y)*e);assert.ok(p.x>=Math.min(from.x,to.x)&&p.x<=Math.max(from.x,to.x));}
+ }
 });
 test('sound settings migrate without losing commissions or accepting invalid volume',()=>{
   const read=p=>loadProgress({getItem:()=>JSON.stringify({version:1,completed:[0,2],...p})});

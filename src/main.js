@@ -6,17 +6,18 @@ import {levels} from './levels.js';
 import {chapters,customers,commissions} from './content.js';
 import {Board,railPos,bufferPos,orderPos,beadPos,sourcePos,W,H} from './renderer.js';
 import {AtelierAudio} from './audio.js';
-import {mountDesigner,showroom,designBracelet} from './design-ui.js';
+import {showroom,designBracelet} from './design-ui.js';
+import {mountDesigner} from './design-workbench.js';
 const $=s=>document.querySelector(s),base=import.meta.env.BASE_URL,art=name=>`${base}art/${name}.svg`;
 const icons={undo:'<path d="M9 6L4 11l5 5M4 11h9a6 6 0 010 12"/>',reset:'<path d="M19 8A8 8 0 105 19M19 3v6h-6"/>',hint:'<path d="M8 17c0-4-3-4-3-8a7 7 0 0114 0c0 4-3 4-3 8M8 20h8M10 23h4"/>',book:'<path d="M12 5Q7 1 2 4v16q5-3 10 1 5-4 10-1V4q-5-3-10 1v16"/>',sound:'<path d="M11 4L6 8H2v8h4l5 4ZM16 7a7 7 0 010 10M19 3a12 12 0 010 18"/>',home:'<path d="M3 11L12 3l9 8M6 9v12h12V9M10 21v-7h4v7"/>',arrow:'<path d="M4 12h16M14 6l6 6-6 6"/>',close:'<path d="M5 5l14 14M19 5L5 19"/>',full:'<path d="M3 9V3h6M15 3h6v6M21 15v6h-6M9 21H3v-6"/>'};
 const icon=(name)=>`<svg viewBox="0 0 24 26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.arrow}</svg>`;
 const app=$('#app');
 let progress;try{progress=loadProgress(localStorage);}catch{progress={completed:[],coins:0,sound:true,session:null};}
-let mode='home',index=0,state,history=[],selected=null,hint=null,board,modal=false,usedHint=false,lastReward=0,designer=null;
+let mode='home',index=0,state,history=[],selected=null,hint=null,board,boardLoading,modal=false,usedHint=false,lastReward=0,designer=null,designGeneration=0;
 const audio=new AtelierAudio(progress);let saveWarning=false,completionTimer,activePointer=null;
 function tone(type='pick',options={}){audio.play(type,options);}
 function syncAudio(){audio.setActive((mode==='play'||mode==='design')&&!modal&&!document.hidden);}
-function cancelPointer(){activePointer=null;document.querySelectorAll('[data-source]').forEach(b=>{if(b._down){b._down=null;b._dragged=true;}});board?.cancelDrag();}
+function cancelPointer(){designer?.cancel();activePointer=null;document.querySelectorAll('[data-source]').forEach(b=>{if(b._down){b._down=null;b._dragged=true;}});board?.cancelDrag();}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelPointer();audio.suspend();}else{syncAudio();}});
 document.addEventListener('pointerdown',()=>audio.unlock(),{passive:true});
 document.addEventListener('keydown',()=>audio.unlock());
@@ -41,7 +42,7 @@ function braceletHTML(order,extra=''){
  }).join('')+'<span class="bracelet-knot"></span></div>';
 }
 function home(){
- designer=null;
+ designGeneration++;designer?.dispose();designer=null;
  mode='home';modal=false;activePointer=null;index=nextIndex();clearTimeout(completionTimer);board?.cancelFeedback();board?.resizeObserver.disconnect();syncAudio();
  app.innerHTML=`<main class="home royal-home"><header class="home-header"><a href="#" class="brand" aria-label="旧珠新约首页"><img src="${art('seal')}" alt=""><span class="brand-cn">旧珠新约</span><span>THE BEAD KINGDOM</span></a><div class="royal-status"><span class="crown-mark">♛</span><b>王国工坊</b><span class="coin-balance" aria-label="累计金币">✦ ${progress.coins}</span><button class="quiet" id="collection-home">${icon('book')}作品与来信 <span>${progress.completed.length}/12</span></button></div></header><section class="hero"><div class="hero-copy"><div class="eyebrow"><span></span> 皇家珠饰工坊 · 第一章</div><h1>旧珠<span>新约</span><i>Every bead holds a story.</i></h1><p>修复一串旧珠，点亮一座小小王国。<br>每完成一份委托，就解锁一枚新的王国徽章。</p><button class="primary start" id="start-btn">${progress.completed.length||progress.session?'回到工坊':'进入王国工坊'} ${icon('arrow')}</button><div class="home-detail"><span>12 枚王国徽章</span><span>3 位来客</span><span>不计时 · 慢慢串</span></div><div class="royal-progress" aria-label="王国工坊进度">${Array.from({length:12},(_,i)=>`<i class="${progress.completed.includes(i)?'on':''}">${i+1}</i>`).join('')}</div></div><div class="hero-art"><span class="royal-seal">✦ 皇家珠饰局 · 2026</span><img class="cover" src="${art('cover')}" alt="皇家珠饰工坊中的水晶手串"><div class="art-caption"><span>CHAPTER 01</span><em>让旧物重新发光</em><span>✦</span></div><div class="paper-label"><small>王国委托 · 第 ${String(index+1).padStart(2,'0')} 号</small><strong>手作 · 顺序 · 小故事</strong></div></div></section><footer class="home-footer"><span>原创手绘风 · 皇家珠饰解谜</span><div class="customer-stamps">${customers.map(c=>`<img src="${art(c.portrait)}" alt="${c.name}">`).join('')}<span>王国里有人在等一份特别的礼物。</span></div><button class="text-button" id="how-home">怎么玩 ${icon('arrow')}</button></footer></main>`;
  $('#start-btn').onclick=()=>{tone();if(restoreValid(progress.session))start(progress.session.level,true);else start(nextIndex());};
@@ -51,10 +52,11 @@ function home(){
  $('#design-home-entry').onclick=startDesigner;$('#showcase-home').onclick=()=>showroom(designContext());
  if(progress.workshop?.design){$('.cover').outerHTML=`<div class="cover home-custom tray-${progress.workshop.tray}">${designBracelet(progress.workshop.design,art)}<span>我的作品 · 听海的旧约</span></div>`;$('.art-caption em').textContent='这一次，是你的搭配';}
 }
-function designContext(){return {app,progress,art,save,tone,toast,openModal,closeModal,home,start:startDesigner,toggleSound,active:()=>mode==='design',ensureBoard:async()=>{await ensureBoard();return board;}};}
-async function startDesigner(){closeModal();mode='design';designer=null;selected=null;hint=null;activePointer=null;clearTimeout(completionTimer);board?.cancelFeedback();board?.resizeObserver.disconnect();designer=await mountDesigner(designContext());syncAudio();}
-async function ensureBoard(){if(board){board.mount($('#board'));return;}try{board=new Board($('#board'));board.onContact=(color,x)=>tone('land',{color,pan:(x/W-.5)*1.1,strength:.35});await board.load();}catch(error){board=null;$('#board').innerHTML=`<div class="gpu-error"><h2>工作台暂时未能打开</h2><p>需要浏览器 WebGL 支持。请尝试更新浏览器或开启硬件加速，然后重试。</p><button class="primary" onclick="location.reload()">重新载入</button></div>`;console.error(error);throw error;}}
+function designContext(generation=designGeneration){return {app,progress,art,save,tone,toast,openModal,closeModal,home,start:startDesigner,toggleSound,active:()=>mode==='design'&&generation===designGeneration,ensureBoard:async()=>{await ensureBoard();return board;}};}
+async function startDesigner(){closeModal();designer?.dispose();const generation=++designGeneration;mode='design';designer=null;selected=null;hint=null;activePointer=null;clearTimeout(completionTimer);board?.cancelFeedback();board?.resizeObserver.disconnect();const view=await mountDesigner(designContext(generation));if(generation===designGeneration&&mode==='design')designer=view;else view?.dispose();syncAudio();}
+async function ensureBoard(){try{if(board)board.mount($('#board'));else{board=new Board($('#board'));board.onContact=(color,x)=>tone('land',{color,pan:(x/W-.5)*1.1,strength:.35});boardLoading=board.load();}await boardLoading;}catch(error){board=null;const host=$('#board');if(host)host.innerHTML=`<div class="gpu-error"><h2>工作台暂时未能打开</h2><p>需要浏览器 WebGL 支持。请尝试更新浏览器或开启硬件加速，然后重试。</p><button class="primary" onclick="location.reload()">重新载入</button></div>`;console.error(error);throw error;}}
 async function start(n,resume=false){
+ designGeneration++;designer?.dispose();designer=null;
  index=n;mode='play';selected=null;hint=null;history=[];usedHint=false;activePointer=null;
  if(resume&&restoreValid(progress.session)){state=clone(progress.session.state);usedHint=!!progress.session.usedHint;history=(progress.session.history??[]).filter(s=>restoreValid({level:n,state:s})).slice(-60);}else state=createState(levels[n]);
  const c=commissions[index],client=customers[c.client],ch=chapters[Math.floor(index/4)];
@@ -148,7 +150,7 @@ function audioSettings(){
  $('#sound-preview').onclick=()=>{if(!progress.sound)toggleSound();tone('land',{color:1});};
 }
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>toast('当前浏览器暂不支持全屏。'));else document.exitFullscreen?.();}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(mode==='complete')return;if(modal)closeModal();else if(selected||board?.drag){cancelPointer();selected=null;hint=null;refresh();}return;}if(modal)return;if(e.key.toLowerCase()==='z'&&mode==='design'){e.preventDefault();designer?.undo();}if(e.key.toLowerCase()==='z'&&mode==='play'){e.preventDefault();cancelPointer();undo();}if(e.key.toLowerCase()==='f'){e.preventDefault();toggleFullscreen();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(mode==='complete')return;if(modal)closeModal();else if(mode==='design'){designer?.cancel();designer?.refresh();}else if(selected||board?.drag){cancelPointer();selected=null;hint=null;refresh();}return;}if(modal)return;if(e.key.toLowerCase()==='z'&&mode==='design'){e.preventDefault();designer?.undo();}if(e.key.toLowerCase()==='z'&&mode==='play'){e.preventDefault();cancelPointer();undo();}if(e.key.toLowerCase()==='f'){e.preventDefault();toggleFullscreen();}});
 window.render_game_to_text=()=>JSON.stringify({mode,modal,level:index+1,completed:progress.completed,coins:progress.coins,reward:lastReward,feedback:board?.status(),audio:audio.status(),coordinates:`logical ${W}x${H}, origin top-left, x right, y down`,design:mode==='design'?designer?.text():null,state,selected,hint,targets:state?{rails:state.rails.map((_,i)=>railPos(i)),buffer:state.buffer.map((_,i)=>bufferPos(i,levels[index].capacity)),orders:state.orders.map((_,i)=>orderPos(i))}:null,goals:state?levels[index].orders:null});
 window.advanceTime=()=>{board?.render();return Promise.resolve();};
 home();

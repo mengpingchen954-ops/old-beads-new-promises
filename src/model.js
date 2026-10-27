@@ -1,16 +1,6 @@
 import {loadWorkshop} from './design-rules.js';
-export const COLORS = [
-  {name:'粉晶',symbol:'',hex:'#c5715c',file:'coral'},
-  {name:'绿幽灵',symbol:'',hex:'#6a988a',file:'jade'},
-  {name:'金发晶',symbol:'',hex:'#c6a257',file:'amber'},
-  {name:'月光石',symbol:'',hex:'#d6d6c5',file:'pearl'},
-  {name:'海蓝宝',symbol:'',hex:'#628b9a',file:'blue'},
-  {name:'紫水晶',symbol:'',hex:'#ab889c',file:'lilac'},
-  {name:'红玛瑙',symbol:'',hex:'#d34b66',file:'garnet'},
-  {name:'绿松石',symbol:'',hex:'#32b8ad',file:'turquoise'},
-  {name:'烟晶',symbol:'',hex:'#7884ad',file:'smoky'},
-  {name:'黄水晶',symbol:'',hex:'#ef8b3a',file:'citrine'}
-];
+import {COLORS} from './materials.js';
+export {COLORS};
 export function createState(level) {
   return {rails:level.rails.map(a=>[...a]),orders:level.orders.map(()=>[]),buffer:Array(level.capacity).fill(null),moves:0};
 }

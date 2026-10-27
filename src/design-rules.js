@@ -1,20 +1,25 @@
-export const MATERIALS = [{color:4,count:4},{color:7,count:4},{color:5,count:4},{color:0,count:1}];
+import {COLORS} from './materials.js';
+export const MATERIALS = COLORS.map((_,color)=>({color,count:color===0?1:4}));
 export const LOCKED = [0,1,11];
 export const TRAYS = [{id:'ivory',name:'珍珠白绒盘',price:0},{id:'azure',name:'海湾蓝绒盘',price:180},{id:'gold',name:'暖金丝绒盘',price:320}];
 export const freshDesign = () => Array.from({length:12},(_,i)=>LOCKED.includes(i)?3:null);
-export const remaining = (slots,color) => MATERIALS.find(m=>m.color===color)?.count-slots.filter(c=>c===color).length;
+export const remaining = (slots,color) => MATERIALS.find(m=>m.color===color)?.count-slots.filter((c,i)=>c===color&&!LOCKED.includes(i)).length;
 export function validDraft(slots){return Array.isArray(slots)&&slots.length===12&&slots.every((c,i)=>LOCKED.includes(i)?c===3:c===null||MATERIALS.some(m=>m.color===c))&&MATERIALS.every(m=>remaining(slots,m.color)>=0);}
 export function designChecks(slots){return [
  {label:'保留三颗旧月光石',ok:LOCKED.every(i=>slots[i]===3)},
  {label:'十二颗珠子，串成完整一圈',ok:slots.every(c=>c!==null)},
  {label:'左右镜像对称（虚线两侧）',ok:[1,2,3,4,5].every(i=>slots[i]!==null&&slots[i]===slots[12-i])},
- {label:'至少四颗海蓝宝或绿松石',ok:slots.filter(c=>c===4||c===7).length>=4},
+ {label:'至少四颗海色珠宝（蓝色或青色）',ok:slots.filter(c=>COLORS[c]?.sea).length>=4},
  {label:'底端用一颗粉晶，留下暖意',ok:slots[6]===0}
  ];}
 export const designWon = slots => validDraft(slots)&&designChecks(slots).every(r=>r.ok);
 export function placeBead(slots,index,color){
  if(!validDraft(slots)||!Number.isInteger(index)||index<0||index>11||LOCKED.includes(index)||!(color===null||MATERIALS.some(m=>m.color===color)))return null;
  const next=[...slots];next[index]=color;return validDraft(next)?next:null;
+}
+export function swapBeads(slots,from,to){
+ if(!validDraft(slots)||![from,to].every(i=>Number.isInteger(i)&&i>=0&&i<12&&!LOCKED.includes(i))||from===to||slots[from]===null)return null;
+ const next=[...slots];[next[from],next[to]]=[next[to],next[from]];return next;
 }
 export function loadWorkshop(value){
  const p=value??{},owned=['ivory',...TRAYS.filter(t=>t.price>0&&Array.isArray(p.owned)&&p.owned.includes(t.id)).map(t=>t.id)];
